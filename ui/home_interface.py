@@ -12,6 +12,7 @@ from qfluentwidgets import (PushButton, CardWidget, TextEdit, FluentIcon)
 from ui.setting_interface import SettingInterface
 from ui.component.video_display_component import VideoDisplayComponent
 from ui.component.task_list_component import TaskListComponent, TaskStatus, TaskOptions
+from ui.component.activation_card import ActivationCard
 from ui.icon.my_fluent_icon import MyFluentIcon
 from backend.config import config, tr
 from backend.tools.constant import InpaintMode
@@ -112,7 +113,16 @@ class HomeInterface(QWidget):
         self.setting_interface = SettingInterface(settings_container)
         settings_container.setLayout(self.setting_interface)
         right_layout.addWidget(settings_container)
-        
+
+        # 激活卡容器
+        activation_container = CardWidget(self)
+        self.activation_card = ActivationCard(activation_container)
+        activation_layout = QVBoxLayout()
+        activation_layout.setContentsMargins(0, 0, 0, 0)
+        activation_layout.addWidget(self.activation_card)
+        activation_container.setLayout(activation_layout)
+        right_layout.addWidget(activation_container)
+
         # 添加任务列表容器
         task_list_container = CardWidget(self)
         task_list_layout = QHBoxLayout()
