@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字幕去除器 - 下载</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            font-size: 20px;
+            color: #a0a0a0;
+            margin-bottom: 32px;
+        }
+        .pricing {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 48px;
+            backdrop-filter: blur(10px);
+        }
+        .price {
+            font-size: 64px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .price span {
+            font-size: 24px;
+            color: #888;
+        }
+        .pricing h2 {
+            margin-bottom: 24px;
+            font-weight: normal;
+            color: #ccc;
+        }
+        .plans {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+        .plan {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 24px;
+            width: 200px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .plan:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .plan h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #00d4ff;
+        }
+        .plan .amount {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .plan .period {
+            font-size: 14px;
+            color: #888;
+        }
+        .download-section {
+            margin-bottom: 48px;
+        }
+        .download-section h2 {
+            text-align: center;
+            margin-bottom: 32px;
+            font-size: 32px;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .card:hover {
+            background: rgba(255,255,255,0.12);
+            transform: translateY(-4px);
+        }
+        .card h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+        .card .desc {
+            color: #aaa;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        .card .feature {
+            text-align: left;
+            margin: 12px 0;
+            font-size: 14px;
+            color: #ccc;
+        }
+        .card .feature::before {
+            content: "✓ ";
+            color: #00ff88;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, #00d4ff, #00a8ff);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(0,212,255,0.3);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 48px 0;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        .feature-card h4 {
+            color: #00d4ff;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        .feature-card p {
+            color: #888;
+            font-size: 14px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 32px;
+            color: #666;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .tag {
+            display: inline-block;
+            background: #00ff88;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .new-badge {
+            background: #ff6b6b;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>字幕去除器</h1>
+            <p class="subtitle">AI 智能去除视频硬字幕，无损分辨率</p>
+        </header>
+
+        <div class="pricing">
+            <h2>授权价格</h2>
+            <div class="price">¥9.9 <span>/月</span></div>
+            <p style="color: #888; margin-top: 16px;">一杯咖啡的价格，永久告别视频字幕烦恼</p>
+            <div class="plans">
+                <div class="plan">
+                    <h3>月卡</h3>
+                    <div class="amount">¥9.9</div>
+                    <div class="period">30天</div>
+                </div>
+                <div class="plan">
+                    <h3>季卡</h3>
+                    <div class="amount">¥27.9</div>
+                    <div class="period">90天 (9.3元/月)</div>
+                </div>
+                <div class="plan">
+                    <h3>年卡</h3>
+                    <div class="amount">¥99.9</div>
+                    <div class="period">365天 (8.3元/月)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h4>无损画质</h4>
+                <p>AI 智能修复去除字幕后的区域，保持原始视频清晰度</p>
+            </div>
+            <div class="feature-card">
+                <h4>本地处理</h4>
+                <p>无需上传视频，本地完成处理，保护您的隐私</p>
+            </div>
+            <div class="feature-card">
+                <h4>多算法支持</h4>
+                <p>支持 STTN、LAMA、ProPainter 等多种修复算法</p>
+            </div>
+            <div class="feature-card">
+                <h4>GPU 加速</h4>
+                <p>NVIDIA、AMD、Intel 显卡全面支持极速处理</p>
+            </div>
+        </div>
+
+        <div class="download-section">
+            <h2>立即下载</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>NVIDIA CUDA 12.6<span class="tag new-badge">推荐</span></h3>
+                    <p class="desc">RTX 20系列及以上显卡使用</p>
+                    <div class="feature">支持 RTX 20/30/40/50 系列</div>
+                    <div class="feature">显存要求 ≥ 4GB</div>
+                    <div class="feature">处理速度最快</div>
+                    <a href="/downloads/vsr-windows-nvidia-cuda-12.6.exe" class="btn">立即下载</a>
+                </div>
+                <div class="card">
+                    <h3>NVIDIA CUDA 11.8</h3>
+                    <p class="desc">老款 NVIDIA 显卡使用</p>
+                    <div class="feature">支持 GTX 10/16/RTX 系列</div>
+                    <div class="feature">显存要求 ≥ 4GB</div>
+                    <div class="feature">兼容性强</div>
+                    <a href="/downloads/vsr-windows-nvidia-cuda-11.8.exe" class="btn btn-secondary">立即下载</a>
+                </div>
+                <div class="card">
+                    <h3>AMD/Intel 显卡<span class="tag">DirectML</span></h3>
+                    <p class="desc">AMD RX / Intel Arc 显卡使用</p>
+                    <div class="feature">AMD RX 5000 及以上</div>
+                    <div class="feature">Intel Arc 系列</div>
+                    <div class="feature">即插即用</div>
+                    <a href="/downloads/vsr-windows-directml.exe" class="btn btn-secondary">立即下载</a>
+                </div>
+                <div class="card">
+                    <h3>CPU 版本</h3>
+                    <p class="desc">无独立显卡或配置较低</p>
+                    <div class="feature">通用处理器</div>
+                    <div class="feature">无需显卡</div>
+                    <div class="feature">兼容性最好</div>
+                    <a href="/downloads/vsr-windows-cpu.exe" class="btn btn-secondary">立即下载</a>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>字幕去除器 v1.4.0</p>
+            <p style="margin-top: 8px; font-size: 12px;">本地AI处理，保护隐私安全</p>
+        </footer>
+    </div>
+</body>
+</html>

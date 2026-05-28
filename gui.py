@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-@Author  : Fang Yao（原作者） / 改写：Jason Eric
-@Time    : 2023/4/1 6:07 下午（原始时间）
+@Time    : 2023/4/1 6:07 下午
 @FileName: gui.py
-@desc: 字幕去除器图形化界面（由 PySimpleGUI 改写为 PySide6）
+@desc: 字幕去除器图形化界面
 """
 
 import sys
@@ -26,6 +25,7 @@ from backend.tools.theme_listener import SystemThemeListener
 from backend.tools.process_manager import ProcessManager
 from ui.advanced_setting_interface import AdvancedSettingInterface
 from ui.home_interface import HomeInterface
+from ui.activation_management_interface import ActivationManagementInterface
 
 
 class SubtitleExtractorGUI(FluentWindow): 
@@ -76,10 +76,13 @@ class SubtitleExtractorGUI(FluentWindow):
         self.homeInterface.setObjectName("HomeInterface")
         self.advancedSettingInterface = AdvancedSettingInterface(self)
         self.advancedSettingInterface.setObjectName("AdvancedSettingInterface")
-        
+        self.activationManagementInterface = ActivationManagementInterface(self)
+        self.activationManagementInterface.setObjectName("ActivationManagementInterface")
+
         # 添加到主窗口作为子界面
         self.addSubInterface(self.homeInterface,FluentIcon.HOME, tr['SubtitleExtractorGUI']['Title'])
         self.addSubInterface(self.advancedSettingInterface, FluentIcon.SETTING, tr['Setting']['AdvancedSetting'], NavigationItemPosition.BOTTOM)
+        self.addSubInterface(self.activationManagementInterface, FluentIcon.CODE, "激活码管理", NavigationItemPosition.BOTTOM)
 
     def on_navigation_item_changed(self, key):
         """导航项变更时的处理函数"""

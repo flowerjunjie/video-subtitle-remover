@@ -1,0 +1,54 @@
+{
+  "codes": [
+    {
+      "code": "VSR-0854-D9BB-DD33-99C8",
+      "months": 3,
+      "price": 29.7,
+      "created_at": "2026-05-28T13:57:21.355808",
+      "activated_at": "2026-05-28T13:57:21.736375",
+      "expires_at": "2026-08-26T13:57:21.736375",
+      "machine_id": "486CD5D934305006B7FE374D5D564A21",
+      "status": "active"
+    },
+    {
+      "code": "VSR-5FF3-6AC1-8DAC-3FA2",
+      "months": 3,
+      "price": 29.7,
+      "created_at": "2026-05-28T13:57:21.355836",
+      "activated_at": null,
+      "expires_at": null,
+      "machine_id": null,
+      "status": "unused"
+    },
+    {
+      "code": "VSR-C4E8-AF96-07EA-9850",
+      "months": 3,
+      "price": 29.7,
+      "created_at": "2026-05-28T13:57:21.355849",
+      "activated_at": null,
+      "expires_at": null,
+      "machine_id": null,
+      "status": "unused"
+    },
+    {
+      "code": "VSR-6180-6769-2714-7983",
+      "months": 3,
+      "price": 29.7,
+      "created_at": "2026-05-28T13:57:21.355861",
+      "activated_at": null,
+      "expires_at": null,
+      "machine_id": null,
+      "status": "unused"
+    },
+    {
+      "code": "VSR-6185-619C-A5E3-0CB0",
+      "months": 3,
+      "price": 29.7,
+      "created_at": "2026-05-28T13:57:21.355872",
+      "activated_at": null,
+      "expires_at": null,
+      "machine_id": null,
+      "status": "unused"
+    }
+  ]
+}

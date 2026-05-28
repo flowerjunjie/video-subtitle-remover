@@ -1,0 +1,752 @@
+{
+  "/www/workspace/video-subtitle-remover/gui.py": {
+    "mtime": 1779965292.7672784,
+    "ast_hash": "893051299bec98bf2bb5b2a5223a0654",
+    "semantic_hash": "893051299bec98bf2bb5b2a5223a0654"
+  },
+  "/www/workspace/video-subtitle-remover/backend/config.py": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "9c44e4eefcc423019e0fbcd0f233074b",
+    "semantic_hash": "9c44e4eefcc423019e0fbcd0f233074b"
+  },
+  "/www/workspace/video-subtitle-remover/backend/main.py": {
+    "mtime": 1779965237.839107,
+    "ast_hash": "eecce4f7538afedaf2a2390e3f573aad",
+    "semantic_hash": "eecce4f7538afedaf2a2390e3f573aad"
+  },
+  "/www/workspace/video-subtitle-remover/backend/__init__.py": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "3f799c3eca2dd3723b1222ba2f6a3e7a",
+    "semantic_hash": "3f799c3eca2dd3723b1222ba2f6a3e7a"
+  },
+  "/www/workspace/video-subtitle-remover/backend/models/V5/ch_det_fast/inference.json": {
+    "mtime": 1779965258.3911712,
+    "ast_hash": "39edb5672983206c80ab69aaf41f7054",
+    "semantic_hash": "39edb5672983206c80ab69aaf41f7054"
+  },
+  "/www/workspace/video-subtitle-remover/backend/models/V5/ch_det_fast/config.json": {
+    "mtime": 1779965258.367171,
+    "ast_hash": "cdcffde27d718e08e221f450308b92a3",
+    "semantic_hash": "cdcffde27d718e08e221f450308b92a3"
+  },
+  "/www/workspace/video-subtitle-remover/backend/models/V5/ch_det/inference.json": {
+    "mtime": 1779965237.879107,
+    "ast_hash": "f890667e8d12d076e1b374140ebee8aa",
+    "semantic_hash": "f890667e8d12d076e1b374140ebee8aa"
+  },
+  "/www/workspace/video-subtitle-remover/backend/models/V5/ch_det/config.json": {
+    "mtime": 1779965237.839107,
+    "ast_hash": "48c30ffb842c688bba70dacfdbcb4c2d",
+    "semantic_hash": "48c30ffb842c688bba70dacfdbcb4c2d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/video_stream.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "2b03f980fb768bc9195a663ea75ff247",
+    "semantic_hash": "2b03f980fb768bc9195a663ea75ff247"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/frame_timecode.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "60ba8ead684cc44a3e2f3c940f0b714d",
+    "semantic_hash": "60ba8ead684cc44a3e2f3c940f0b714d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/platform.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "f99e67d616b1d729665cf32f540b5e47",
+    "semantic_hash": "f99e67d616b1d729665cf32f540b5e47"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/__init__.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "c0d6230639ffef92579a34bafab48fb4",
+    "semantic_hash": "c0d6230639ffef92579a34bafab48fb4"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/scene_manager.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "6752aaa684b0391746a527ffce5e0373",
+    "semantic_hash": "6752aaa684b0391746a527ffce5e0373"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/video_manager.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "097fb98a1b939007d891df30047ad254",
+    "semantic_hash": "097fb98a1b939007d891df30047ad254"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/scene_detector.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "acf65cd5fb300587f87543684ed53876",
+    "semantic_hash": "acf65cd5fb300587f87543684ed53876"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/stats_manager.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "ddd7a89b1bfa99f3fae111161875f540",
+    "semantic_hash": "ddd7a89b1bfa99f3fae111161875f540"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/__main__.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "42bbec211d2d3ee5b19b9306a4246bcc",
+    "semantic_hash": "42bbec211d2d3ee5b19b9306a4246bcc"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/_scene_loader.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "6d69037fef56a76b4536b4cbe33c28be",
+    "semantic_hash": "6d69037fef56a76b4536b4cbe33c28be"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/video_splitter.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "7a2367033a99e09a1669e1bc5221d0bd",
+    "semantic_hash": "7a2367033a99e09a1669e1bc5221d0bd"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/detectors/content_detector.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "42dba7b9f82e0fd70bd01a41a9177ea4",
+    "semantic_hash": "42dba7b9f82e0fd70bd01a41a9177ea4"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/detectors/threshold_detector.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "9412e6601935059cd6a1a008b472acb6",
+    "semantic_hash": "9412e6601935059cd6a1a008b472acb6"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/detectors/__init__.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "ee37c29c40748cb760bc794eed73d568",
+    "semantic_hash": "ee37c29c40748cb760bc794eed73d568"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/detectors/motion_detector.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "1e2e0ec9e9dead0b1d0408df6fb4d52b",
+    "semantic_hash": "1e2e0ec9e9dead0b1d0408df6fb4d52b"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/detectors/adaptive_detector.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "23cddbd4cf5d76ad10429166da72c2e8",
+    "semantic_hash": "23cddbd4cf5d76ad10429166da72c2e8"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/_cli/config.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "007d7ff296fee04cf59e27e9de378790",
+    "semantic_hash": "007d7ff296fee04cf59e27e9de378790"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/_cli/controller.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "ddc3cb4a37a291c7346c090d34624fc8",
+    "semantic_hash": "ddc3cb4a37a291c7346c090d34624fc8"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/_cli/__init__.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "e737863c91175418b8fd37608bda8b59",
+    "semantic_hash": "e737863c91175418b8fd37608bda8b59"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/_cli/context.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "5981c3f592b08306fea196bb1d80a767",
+    "semantic_hash": "5981c3f592b08306fea196bb1d80a767"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/_thirdparty/__init__.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "9fa5c3ee1f893fd74b7841d47c799a98",
+    "semantic_hash": "9fa5c3ee1f893fd74b7841d47c799a98"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/_thirdparty/simpletable.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "78ebe75aa218e368ab5a63435bf39d8d",
+    "semantic_hash": "78ebe75aa218e368ab5a63435bf39d8d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/backends/moviepy.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "b33b9f97ebf82cb11ed0019aa513c5bb",
+    "semantic_hash": "b33b9f97ebf82cb11ed0019aa513c5bb"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/backends/__init__.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "574230b6561b33a00cdd50ac49aeaced",
+    "semantic_hash": "574230b6561b33a00cdd50ac49aeaced"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/backends/opencv.py": {
+    "mtime": 1779965291.8392756,
+    "ast_hash": "89f2cbfe46c95f447d8dc7a9c545c9ac",
+    "semantic_hash": "89f2cbfe46c95f447d8dc7a9c545c9ac"
+  },
+  "/www/workspace/video-subtitle-remover/backend/scenedetect/backends/pyav.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "95c703687fbf3513285b2713a15f56c4",
+    "semantic_hash": "95c703687fbf3513285b2713a15f56c4"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/args_handler.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "a0407764ee0e4afc3ed283bdfc172321",
+    "semantic_hash": "a0407764ee0e4afc3ed283bdfc172321"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/constant.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "10a681e544bfbcb8c5362bb665a232d9",
+    "semantic_hash": "10a681e544bfbcb8c5362bb665a232d9"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/ffmpeg_cli.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "d80d3920ebfbdb36686a3faa70378097",
+    "semantic_hash": "d80d3920ebfbdb36686a3faa70378097"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/inpaint_tools.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "bc6979ee93ff3947e880793f9728ef64",
+    "semantic_hash": "bc6979ee93ff3947e880793f9728ef64"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/theme_listener.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "cda68ef748dd9b07afb727c11922973c",
+    "semantic_hash": "cda68ef748dd9b07afb727c11922973c"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/model_config.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "dcba2918b1c29e7116bfc280cf467e66",
+    "semantic_hash": "dcba2918b1c29e7116bfc280cf467e66"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/makedist.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "6efafd84a8be05a2d7ed646fbcf8d159",
+    "semantic_hash": "6efafd84a8be05a2d7ed646fbcf8d159"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/merge_video.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "1e2982dcc1b95898733d925d160fad01",
+    "semantic_hash": "1e2982dcc1b95898733d925d160fad01"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/version_service.py": {
+    "mtime": 1779965291.8512757,
+    "ast_hash": "518da5936af4e6ce60551bb974ca8592",
+    "semantic_hash": "518da5936af4e6ce60551bb974ca8592"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/video_io.py": {
+    "mtime": 1779965291.8512757,
+    "ast_hash": "a73574b0ecf183ac912a740e2ac69dc6",
+    "semantic_hash": "a73574b0ecf183ac912a740e2ac69dc6"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/subtitle_remover_remote_call.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "b8363b568ba8a308627956c57b277295",
+    "semantic_hash": "b8363b568ba8a308627956c57b277295"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/process_manager.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "7b02861f5e5ae83fb86b59ea8ca86ed2",
+    "semantic_hash": "7b02861f5e5ae83fb86b59ea8ca86ed2"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/subtitle_detect.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "6265312ba240be8882839ae41dfc1277",
+    "semantic_hash": "6265312ba240be8882839ae41dfc1277"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/common_tools.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "4feb1706571d52739a2b83eed2691b9d",
+    "semantic_hash": "4feb1706571d52739a2b83eed2691b9d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/hardware_accelerator.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "4325e4a76401f2d07333bc1dabe7b199",
+    "semantic_hash": "4325e4a76401f2d07333bc1dabe7b199"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/ocr.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "84c52c1436ce1c09d60d4498aeac9b7b",
+    "semantic_hash": "84c52c1436ce1c09d60d4498aeac9b7b"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/concurrent/task_manager.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "bab976efef6eb34cdab1bda60a6b61b0",
+    "semantic_hash": "bab976efef6eb34cdab1bda60a6b61b0"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/concurrent/__init__.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "25809e22b8f97d40c8b0ef5f35e6362a",
+    "semantic_hash": "25809e22b8f97d40c8b0ef5f35e6362a"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/concurrent/task.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "64f8bb0d9abd7453d73a60380cfe914b",
+    "semantic_hash": "64f8bb0d9abd7453d73a60380cfe914b"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/concurrent/future.py": {
+    "mtime": 1779965291.8432755,
+    "ast_hash": "05fea20e126bdec7726cb454cc3e8f53",
+    "semantic_hash": "05fea20e126bdec7726cb454cc3e8f53"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/dataset_sttn.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "07d9ccae993f383f16c07247b5665337",
+    "semantic_hash": "07d9ccae993f383f16c07247b5665337"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/loss_sttn.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "1a5d1b207a4373fbd71b4506b7526fe1",
+    "semantic_hash": "1a5d1b207a4373fbd71b4506b7526fe1"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/train_sttn.py": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "6bc3dd80dfdd62fc5dd0c864a0a6c126",
+    "semantic_hash": "6bc3dd80dfdd62fc5dd0c864a0a6c126"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/utils_sttn.py": {
+    "mtime": 1779965291.8512757,
+    "ast_hash": "2c8f7bbf9544ab51e05960884ea87fe7",
+    "semantic_hash": "2c8f7bbf9544ab51e05960884ea87fe7"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/trainer_sttn.py": {
+    "mtime": 1779965291.8512757,
+    "ast_hash": "13c46100ce019e29aa9e0218e2d953d7",
+    "semantic_hash": "13c46100ce019e29aa9e0218e2d953d7"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/datasets_sttn/youtube-vos/test.json": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "1d7e5b056ef1d358124495e944e7c3f2",
+    "semantic_hash": "1d7e5b056ef1d358124495e944e7c3f2"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/datasets_sttn/youtube-vos/train.json": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "534b463e887e6539f143289d0132a5a8",
+    "semantic_hash": "534b463e887e6539f143289d0132a5a8"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/datasets_sttn/davis/test.json": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "e0879de2a283d55f2a7c337ef4da6aca",
+    "semantic_hash": "e0879de2a283d55f2a7c337ef4da6aca"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/datasets_sttn/davis/train.json": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "fc66c9f1f00ecfd6e10ec6a388ce12df",
+    "semantic_hash": "fc66c9f1f00ecfd6e10ec6a388ce12df"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/configs_sttn/davis.json": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "a1d34c21a1d30c1d15bd82dec42da1c2",
+    "semantic_hash": "a1d34c21a1d30c1d15bd82dec42da1c2"
+  },
+  "/www/workspace/video-subtitle-remover/backend/tools/train/configs_sttn/youtube-vos.json": {
+    "mtime": 1779965291.8472757,
+    "ast_hash": "477c6f982b9c928a0167f37f428954f1",
+    "semantic_hash": "477c6f982b9c928a0167f37f428954f1"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/sttn_det_inpaint.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "d09c4d081136720ea71a46c6ce16e79e",
+    "semantic_hash": "d09c4d081136720ea71a46c6ce16e79e"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/__init__.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/propainter_inpaint.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "b3f9455a0a30cd8b125eca32a940ec89",
+    "semantic_hash": "b3f9455a0a30cd8b125eca32a940ec89"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/opencv_inpaint.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "0a6981053dcc7f90ce1e215d5956f949",
+    "semantic_hash": "0a6981053dcc7f90ce1e215d5956f949"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/sttn_auto_inpaint.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "f28df01bbdaa0027aa6284822eba6043",
+    "semantic_hash": "f28df01bbdaa0027aa6284822eba6043"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/lama_inpaint.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "c8ee7485a2746abb54eb5d4b9ca6422d",
+    "semantic_hash": "c8ee7485a2746abb54eb5d4b9ca6422d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/sttn/network_sttn.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "3ae6776258d49c86d29060b35120600c",
+    "semantic_hash": "3ae6776258d49c86d29060b35120600c"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/sttn/auto_sttn.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "94d6a8f46c8aeaed80a77206fb20a417",
+    "semantic_hash": "94d6a8f46c8aeaed80a77206fb20a417"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/utils/utils.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "860d83ac9ca53cbe8851121d5d42f3e0",
+    "semantic_hash": "860d83ac9ca53cbe8851121d5d42f3e0"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/utils/sttn_utils.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "f000f7cb54fb71be526527fbc33de90d",
+    "semantic_hash": "f000f7cb54fb71be526527fbc33de90d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/utils/lama_util.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "430051183ee7d18c6be17ca6608eb58f",
+    "semantic_hash": "430051183ee7d18c6be17ca6608eb58f"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/utils/__init__.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "fdb711dc35c5ef81c7e148b593cbba1a",
+    "semantic_hash": "fdb711dc35c5ef81c7e148b593cbba1a"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/utils/spectral_norm.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "309cae3d59f6fa954765a5ce68d759e4",
+    "semantic_hash": "309cae3d59f6fa954765a5ce68d759e4"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/utils.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "9afe0767ab54bf7005d843cf85aabf92",
+    "semantic_hash": "9afe0767ab54bf7005d843cf85aabf92"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/prefetch_dataloader.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "4fcae8477fb01e30db0d286f4d6e4088",
+    "semantic_hash": "4fcae8477fb01e30db0d286f4d6e4088"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/lr_scheduler.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "bae08e97ccc2fbadbd921d5ee5edfc6d",
+    "semantic_hash": "bae08e97ccc2fbadbd921d5ee5edfc6d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/trainer_flow_w_edge.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "87baea833fa2c3438ecf59d552903d9d",
+    "semantic_hash": "87baea833fa2c3438ecf59d552903d9d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/dataset.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "f445a556e0ce48a88eaac78e48fa9277",
+    "semantic_hash": "f445a556e0ce48a88eaac78e48fa9277"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/metrics.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "5dd5e1904e20b5d1629983e8811cd817",
+    "semantic_hash": "5dd5e1904e20b5d1629983e8811cd817"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/trainer.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "905e5b674c1cfff18a21cfbf32ee352b",
+    "semantic_hash": "905e5b674c1cfff18a21cfbf32ee352b"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/dist.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "e1157b0d581e93e55ab143d881d00f26",
+    "semantic_hash": "e1157b0d581e93e55ab143d881d00f26"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/core/loss.py": {
+    "mtime": 1779965237.827107,
+    "ast_hash": "7a5277aca051ed21ee067046c15ab33d",
+    "semantic_hash": "7a5277aca051ed21ee067046c15ab33d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/misc.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "84a6da5a4eda2f248ff45af62162169e",
+    "semantic_hash": "84a6da5a4eda2f248ff45af62162169e"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/__init__.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "68b329da9893e34099c7d8ad5cb9c940",
+    "semantic_hash": "68b329da9893e34099c7d8ad5cb9c940"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/recurrent_flow_completion.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "6fb29a9fcf3a524719c15e87d5f7c0f8",
+    "semantic_hash": "6fb29a9fcf3a524719c15e87d5f7c0f8"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/vgg_arch.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "0205e4ad0146a26f1cfb0c64c8cf1d09",
+    "semantic_hash": "0205e4ad0146a26f1cfb0c64c8cf1d09"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/propainter.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "97c023476536cc0982becbb3c01501ff",
+    "semantic_hash": "97c023476536cc0982becbb3c01501ff"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/modules/flow_loss_utils.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "3b8fb467c901ed1c0c1e8c95101f21e5",
+    "semantic_hash": "3b8fb467c901ed1c0c1e8c95101f21e5"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/modules/base_module.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "5d34975ef5fd51b2a9f9961a4331e6f3",
+    "semantic_hash": "5d34975ef5fd51b2a9f9961a4331e6f3"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/modules/sparse_transformer.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "b520fd576d72a429d443f5e278e2a456",
+    "semantic_hash": "b520fd576d72a429d443f5e278e2a456"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/modules/flow_comp_raft.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "0f602f5bd1b79166d674e24dfb55a197",
+    "semantic_hash": "0f602f5bd1b79166d674e24dfb55a197"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/modules/deformconv.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "41a71bd03ac7393a64adf5aab7d658fb",
+    "semantic_hash": "41a71bd03ac7393a64adf5aab7d658fb"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/modules/spectral_norm.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "096a14d978df331ada9161ea8d657ccd",
+    "semantic_hash": "096a14d978df331ada9161ea8d657ccd"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/canny/gaussian.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "3360a7200257f45e4650074cc541936d",
+    "semantic_hash": "3360a7200257f45e4650074cc541936d"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/canny/canny_filter.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "e10410e2964b478e948029811240f046",
+    "semantic_hash": "e10410e2964b478e948029811240f046"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/canny/sobel.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "536c2e2709c6cd63c2333cb1bf2ffeea",
+    "semantic_hash": "536c2e2709c6cd63c2333cb1bf2ffeea"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/canny/filter.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "af42d793b19c69e92d21790d25c93d3c",
+    "semantic_hash": "af42d793b19c69e92d21790d25c93d3c"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/model/canny/kernels.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "d416c810386b847416d20ddc5a0042c4",
+    "semantic_hash": "d416c810386b847416d20ddc5a0042c4"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/update.py": {
+    "mtime": 1779965237.8351068,
+    "ast_hash": "2781b9d6458dbecd2db3700ef857e5f2",
+    "semantic_hash": "2781b9d6458dbecd2db3700ef857e5f2"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/extractor.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "6e2c25b70b8bfffdfcc90ce2c379b632",
+    "semantic_hash": "6e2c25b70b8bfffdfcc90ce2c379b632"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/__init__.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "bdb1d31f39a02047f02da0c31a56270b",
+    "semantic_hash": "bdb1d31f39a02047f02da0c31a56270b"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/corr.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "99dfc0922e2bac7f7f0611e24b7045a1",
+    "semantic_hash": "99dfc0922e2bac7f7f0611e24b7045a1"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/raft.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "8ba796546ad3ba7c562aca2c88f92267",
+    "semantic_hash": "8ba796546ad3ba7c562aca2c88f92267"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/datasets.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "daab716202803992a4ecfc5d5ced3bba",
+    "semantic_hash": "daab716202803992a4ecfc5d5ced3bba"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/demo.py": {
+    "mtime": 1779965237.831107,
+    "ast_hash": "6acfbbfdfff9d7aa370f8e9dc055860b",
+    "semantic_hash": "6acfbbfdfff9d7aa370f8e9dc055860b"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/utils/utils.py": {
+    "mtime": 1779965237.8351068,
+    "ast_hash": "078ee359cfa24f1f7e5108cd83916bb1",
+    "semantic_hash": "078ee359cfa24f1f7e5108cd83916bb1"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/utils/flow_viz.py": {
+    "mtime": 1779965237.8351068,
+    "ast_hash": "819a9a94368bbf59a0aa125927d4e1ee",
+    "semantic_hash": "819a9a94368bbf59a0aa125927d4e1ee"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/utils/frame_utils.py": {
+    "mtime": 1779965237.8351068,
+    "ast_hash": "01a886395d96a968210cc5c833fea57f",
+    "semantic_hash": "01a886395d96a968210cc5c833fea57f"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/utils/__init__.py": {
+    "mtime": 1779965237.8351068,
+    "ast_hash": "88a5c17eccdaa2651aa06bbf5f49f89b",
+    "semantic_hash": "88a5c17eccdaa2651aa06bbf5f49f89b"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/utils/augmentor.py": {
+    "mtime": 1779965237.8351068,
+    "ast_hash": "a576f4f3f4c4e7b7e09335815b1f8eaf",
+    "semantic_hash": "a576f4f3f4c4e7b7e09335815b1f8eaf"
+  },
+  "/www/workspace/video-subtitle-remover/backend/inpaint/video/raft/utils/flow_viz_pt.py": {
+    "mtime": 1779965237.8351068,
+    "ast_hash": "f682bdf411743897c0120c92fcadb1b3",
+    "semantic_hash": "f682bdf411743897c0120c92fcadb1b3"
+  },
+  "/www/workspace/video-subtitle-remover/ui/home_interface.py": {
+    "mtime": 1779965293.1552796,
+    "ast_hash": "c92df3bc77da3364f56dcb6d1b283d6b",
+    "semantic_hash": "c92df3bc77da3364f56dcb6d1b283d6b"
+  },
+  "/www/workspace/video-subtitle-remover/ui/advanced_setting_interface.py": {
+    "mtime": 1779965293.1512797,
+    "ast_hash": "7f66cabaa152310cda30128bae9f6aa9",
+    "semantic_hash": "7f66cabaa152310cda30128bae9f6aa9"
+  },
+  "/www/workspace/video-subtitle-remover/ui/setting_interface.py": {
+    "mtime": 1779965293.1552796,
+    "ast_hash": "1282fded3d39e9277e7281a511bb9f7a",
+    "semantic_hash": "1282fded3d39e9277e7281a511bb9f7a"
+  },
+  "/www/workspace/video-subtitle-remover/ui/icon/my_fluent_icon.py": {
+    "mtime": 1779965293.1552796,
+    "ast_hash": "338a762890ba4fcb80b5065d5fe7bd3d",
+    "semantic_hash": "338a762890ba4fcb80b5065d5fe7bd3d"
+  },
+  "/www/workspace/video-subtitle-remover/ui/component/video_display_component.py": {
+    "mtime": 1779965293.1552796,
+    "ast_hash": "4923d48d91d3cf3a4757654fcc65b0ec",
+    "semantic_hash": "4923d48d91d3cf3a4757654fcc65b0ec"
+  },
+  "/www/workspace/video-subtitle-remover/ui/component/task_list_component.py": {
+    "mtime": 1779965293.1512797,
+    "ast_hash": "0d3e114dff8ae54b03213b1c638a3021",
+    "semantic_hash": "0d3e114dff8ae54b03213b1c638a3021"
+  },
+  "/www/workspace/video-subtitle-remover/requirements.txt": {
+    "mtime": 1779965292.7672784,
+    "ast_hash": "63ef1c27e75f8f28058de4eb87c74c8e",
+    "semantic_hash": "63ef1c27e75f8f28058de4eb87c74c8e"
+  },
+  "/www/workspace/video-subtitle-remover/README_en.md": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "f83433ab3d10dbef98edfbc8e8789fe4",
+    "semantic_hash": "f83433ab3d10dbef98edfbc8e8789fe4"
+  },
+  "/www/workspace/video-subtitle-remover/README.md": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "c67720dff33555dab15c654ce83bfa38",
+    "semantic_hash": "c67720dff33555dab15c654ce83bfa38"
+  },
+  "/www/workspace/video-subtitle-remover/CLAUDE.md": {
+    "mtime": 1779965405.9196317,
+    "ast_hash": "9df1004f8adccd695c295523f3f4bf39",
+    "semantic_hash": "9df1004f8adccd695c295523f3f4bf39"
+  },
+  "/www/workspace/video-subtitle-remover/backend/models/V5/ch_det_fast/inference.yml": {
+    "mtime": 1779965259.7391753,
+    "ast_hash": "9be543319a9a3c6ab4275ee142552471",
+    "semantic_hash": "9be543319a9a3c6ab4275ee142552471"
+  },
+  "/www/workspace/video-subtitle-remover/backend/models/V5/ch_det/inference.yml": {
+    "mtime": 1779965258.367171,
+    "ast_hash": "3f6f0883f8df0241ff056e01a7879cd8",
+    "semantic_hash": "3f6f0883f8df0241ff056e01a7879cd8"
+  },
+  "/www/workspace/video-subtitle-remover/.github/workflows/build-windows-directml.yml": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "be475689499ad18025b4c7f7ae583e0f",
+    "semantic_hash": "be475689499ad18025b4c7f7ae583e0f"
+  },
+  "/www/workspace/video-subtitle-remover/.github/workflows/build-windows-cpu.yml": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "4794e18b8ba1535be1ddb921330ccf95",
+    "semantic_hash": "4794e18b8ba1535be1ddb921330ccf95"
+  },
+  "/www/workspace/video-subtitle-remover/.github/workflows/build-windows-cuda-11.8.yml": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "6717b364b84cd696e62dafb6530f3dea",
+    "semantic_hash": "6717b364b84cd696e62dafb6530f3dea"
+  },
+  "/www/workspace/video-subtitle-remover/.github/workflows/build-windows-cuda-12.8.yml": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "9ad9d385dad185421e31b71d67e01a52",
+    "semantic_hash": "9ad9d385dad185421e31b71d67e01a52"
+  },
+  "/www/workspace/video-subtitle-remover/.github/workflows/build-docker.yml": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "c1672651701ea22cca2060121de7fa9e",
+    "semantic_hash": "c1672651701ea22cca2060121de7fa9e"
+  },
+  "/www/workspace/video-subtitle-remover/.github/workflows/build-windows-cuda-12.6.yml": {
+    "mtime": 1779965214.427034,
+    "ast_hash": "1a0a0fdcbbc8a7ba8d527e2aa9fd1cd3",
+    "semantic_hash": "1a0a0fdcbbc8a7ba8d527e2aa9fd1cd3"
+  },
+  "/www/workspace/video-subtitle-remover/design/paper_intro.pdf": {
+    "mtime": 1779965292.7392783,
+    "ast_hash": "7b917f39921da9f635f51179ae53e1e3",
+    "semantic_hash": "7b917f39921da9f635f51179ae53e1e3"
+  },
+  "/www/workspace/video-subtitle-remover/design/paper_sttn.pdf": {
+    "mtime": 1779965292.7592785,
+    "ast_hash": "5343fc62b72f83a2e45eea0c86a11578",
+    "semantic_hash": "5343fc62b72f83a2e45eea0c86a11578"
+  },
+  "/www/workspace/video-subtitle-remover/design/demo.gif": {
+    "mtime": 1779965292.2232769,
+    "ast_hash": "10ca05a72dc6414aa5642154307de27b",
+    "semantic_hash": "10ca05a72dc6414aa5642154307de27b"
+  },
+  "/www/workspace/video-subtitle-remover/design/icon_1024.PNG": {
+    "mtime": 1779965292.7232783,
+    "ast_hash": "1cdcea5b2c627e5bcbf30ef4fb7ee545",
+    "semantic_hash": "1cdcea5b2c627e5bcbf30ef4fb7ee545"
+  },
+  "/www/workspace/video-subtitle-remover/design/sponsor.png": {
+    "mtime": 1779965292.7672784,
+    "ast_hash": "19ca3f0543b02dc0ea0a5ef9c8c2a477",
+    "semantic_hash": "19ca3f0543b02dc0ea0a5ef9c8c2a477"
+  },
+  "/www/workspace/video-subtitle-remover/design/demo2.gif": {
+    "mtime": 1779965292.7072783,
+    "ast_hash": "184a059e51068f29baabcf19c0a86477",
+    "semantic_hash": "184a059e51068f29baabcf19c0a86477"
+  },
+  "/www/workspace/video-subtitle-remover/design/bg.png": {
+    "mtime": 1779965291.8512757,
+    "ast_hash": "2576d9b14a02846e83f5629c6ee5de4e",
+    "semantic_hash": "2576d9b14a02846e83f5629c6ee5de4e"
+  },
+  "/www/workspace/video-subtitle-remover/design/demo.png": {
+    "mtime": 1779965292.235277,
+    "ast_hash": "48100fffcda2599c74c728e10b3e83ee",
+    "semantic_hash": "48100fffcda2599c74c728e10b3e83ee"
+  },
+  "/www/workspace/video-subtitle-remover/ui/icon/stop_black.svg": {
+    "mtime": 1779965293.1552796,
+    "ast_hash": "c706c937862f72dd28a67769f0587e88",
+    "semantic_hash": "c706c937862f72dd28a67769f0587e88"
+  },
+  "/www/workspace/video-subtitle-remover/ui/icon/stop_white.svg": {
+    "mtime": 1779965293.1552796,
+    "ast_hash": "7eab8240b4aafff6356946fbd504c8fa",
+    "semantic_hash": "7eab8240b4aafff6356946fbd504c8fa"
+  },
+  "/www/workspace/video-subtitle-remover/test/test.png": {
+    "mtime": 1779965292.8072786,
+    "ast_hash": "026ec2f12ec288dc2092a1a5073050b0",
+    "semantic_hash": "026ec2f12ec288dc2092a1a5073050b0"
+  },
+  "/www/workspace/video-subtitle-remover/test/test1.mp4": {
+    "mtime": 1779965292.8512788,
+    "ast_hash": "79b32909316c92724953ba58c826a544",
+    "semantic_hash": "79b32909316c92724953ba58c826a544"
+  },
+  "/www/workspace/video-subtitle-remover/test/test2.mp4": {
+    "mtime": 1779965292.8632789,
+    "ast_hash": "0c601ee90dd21d4f921ed8cfbf16db7f",
+    "semantic_hash": "0c601ee90dd21d4f921ed8cfbf16db7f"
+  },
+  "/www/workspace/video-subtitle-remover/test/test.mp4": {
+    "mtime": 1779965292.8032787,
+    "ast_hash": "b578a39d2544e1747b83930750a6d78b",
+    "semantic_hash": "b578a39d2544e1747b83930750a6d78b"
+  },
+  "/www/workspace/video-subtitle-remover/test/test3.mp4": {
+    "mtime": 1779965292.907279,
+    "ast_hash": "c342c5c307b30165f780e5e0aa635d82",
+    "semantic_hash": "c342c5c307b30165f780e5e0aa635d82"
+  },
+  "/www/workspace/video-subtitle-remover/test/test4.mp4": {
+    "mtime": 1779965293.1512797,
+    "ast_hash": "6c9928467b68e1df9c01f04672e92ecd",
+    "semantic_hash": "6c9928467b68e1df9c01f04672e92ecd"
+  }
+}
