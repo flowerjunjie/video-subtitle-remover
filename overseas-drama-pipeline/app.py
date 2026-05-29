@@ -154,7 +154,7 @@ def generate_tts_elevenlabs(text: str, api_key: str, voice_id: str, output_path:
     except Exception as e:
         return generate_tts_gtts(text, output_path)
 
-def process_video(video_path: str, target_face: str = None, config: dict = None, progress=gr.Progress()) -> dict:
+def process_video(video_path: str, target_face: str = None, config: dict = None, progress=gr.Progress(), model_size: str = "base") -> dict:
     """
     视频处理主管道（CPU版本）
     实际部署时替换为 Deep-Live-Cam + Wav2Lip
@@ -216,7 +216,7 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         transcript_segments = []
         try:
             if audio_path:
-                transcript = transcribe_audio(audio_path)
+                transcript = transcribe_audio(audio_path, model_size)
                 original_text = transcript.get("text", "")
                 transcript_segments = transcript.get("segments", [])
                 results["steps"].append({
@@ -428,6 +428,13 @@ def create_demo():
                             type="filepath"
                         )
 
+                        model_size_input = gr.Dropdown(
+                            label="Whisper 模型大小",
+                            choices=["tiny", "base", "small", "medium", "large"],
+                            value="base",
+                            info="tiny最快精度低，large最慢精度高；16G内存建议 base 或 small"
+                        )
+
                         process_btn = gr.Button("🚀 开始处理", variant="primary", size="lg")
 
                     with gr.Column(scale=1):
@@ -449,17 +456,43 @@ def create_demo():
                             interactive=False
                         )
 
+                        # 错误信息展示
+                        error_output = gr.Textbox(
+                            label="错误详情",
+                            interactive=False,
+                            lines=3
+                        )
+
                         # 字幕文件下载链接
                         subtitle_download = gr.File(
                             label="字幕文件下载",
                             interactive=False
                         )
 
-                        # 错误信息展示
-                        error_output = gr.JSON(
-                            label="错误详情",
-                            show_label=True
-                        )
+            with gr.Tab("📁 输出文件"):
+                gr.Markdown("""
+                ## 📁 历史输出文件
+
+                以下是 outputs 目录中的生成文件，支持直接下载。
+                """)
+                output_files_list = gr.File(
+                    label="可下载文件",
+                    interactive=False
+                )
+
+                def list_output_files():
+                    files = []
+                    if os.path.exists(OUTPUT_DIR):
+                        for f in os.listdir(OUTPUT_DIR):
+                            fp = os.path.join(OUTPUT_DIR, f)
+                            if os.path.isfile(fp):
+                                files.append(fp)
+                    return files
+
+                output_files_list.value = list_output_files()
+
+                refresh_btn = gr.Button("🔄 刷新列表")
+                refresh_btn.click(fn=list_output_files, outputs=[output_files_list])
 
             with gr.Tab("⚙️ API 配置"):
                 gr.Markdown("""
@@ -562,9 +595,9 @@ def create_demo():
         """)
 
         # 事件绑定 - 使用 config 参数
-        def process_with_config(video_path, target_face):
+        def process_with_config(video_path, target_face, model_size):
             cfg = load_config()
-            results = process_video(video_path, target_face, cfg)
+            results = process_video(video_path, target_face, cfg, model_size=model_size)
 
             # 状态信息
             status_msg = f"处理状态: {results.get('status', 'unknown')}\n"
@@ -588,10 +621,23 @@ def create_demo():
 
             return status_msg, output_video, subtitle_file if subtitle_file else None, errors
 
+        # 按钮防重复：处理中禁用
+        def disable_processing():
+            return gr.Button(interactive=False)
+
+        def enable_processing():
+            return gr.Button(interactive=True)
+
         process_btn.click(
+            fn=disable_processing,
+            outputs=[process_btn]
+        ).then(
             fn=process_with_config,
-            inputs=[video_input, target_face_input],
+            inputs=[video_input, target_face_input, model_size_input],
             outputs=[status_output, result_video, subtitle_download, error_output]
+        ).then(
+            fn=enable_processing,
+            outputs=[process_btn]
         )
 
     return demo
