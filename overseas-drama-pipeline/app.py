@@ -164,6 +164,13 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
     if config is None:
         config = load_config()
 
+    # 文件大小校验
+    file_size_mb = os.path.getsize(video_path) / (1024 * 1024)
+    if file_size_mb > MAX_FILE_SIZE_MB:
+        results["status"] = "error"
+        results["errors"].append(f"文件过大 ({file_size_mb:.1f}MB)，请上传 {MAX_FILE_SIZE_MB}MB 以内的视频")
+        return results
+
     results = {
         "status": "processing",
         "input_video": video_path,
@@ -365,6 +372,13 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         results["error"] = str(e)
         results["errors"].append(f"处理管道: {str(e)}")
         progress(0, desc=f"失败: {str(e)}")
+    finally:
+        # 清理临时音频文件
+        if audio_path and os.path.exists(audio_path):
+            try:
+                os.remove(audio_path)
+            except Exception:
+                pass
 
     return results
 
