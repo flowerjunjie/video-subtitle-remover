@@ -814,6 +814,14 @@ def create_demo():
         def update_preview_and_estimate(video_path, model_size):
             estimate = ""
             metadata = ""
+
+            # 批量模式下只处理第一个视频
+            if isinstance(video_path, (list, tuple)):
+                if video_path:
+                    video_path = video_path[0]
+                else:
+                    return None, "", ""
+
             if video_path:
                 try:
                     cmd = f'ffprobe -v quiet -show_entries format=duration,size -of csv=p=0 "{video_path}"'
