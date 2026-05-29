@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 import shutil
 import json
+import threading
 import uuid
 from pathlib import Path
 from datetime import datetime
@@ -30,6 +31,15 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 
 # ============== Whisper 模型缓存（避免重复加载）=============
 _loaded_models = {}
+
+# ============== 取消事件 ==============
+_cancel_event = threading.Event()
+
+def is_cancelled():
+    return _cancel_event.is_set()
+
+def cancel_processing():
+    _cancel_event.set()
 
 def get_whisper_model(model_size: str = "base"):
     """加载 Whisper 模型并缓存，避免每次重新加载"""
@@ -214,6 +224,9 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
     session_prefix = f"{video_basename}_{unique_id}"
 
     try:
+        # 取消检查
+        if is_cancelled():
+            raise Exception("用户取消")
         # Step 1: 提取音频
         progress(0, desc="提取音频中...")
         step1_start = datetime.now()
@@ -242,6 +255,8 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         original_text = ""
         transcript_segments = []
         try:
+            if is_cancelled():
+                raise Exception("用户取消")
             if audio_path:
                 transcript = transcribe_audio(audio_path, model_size)
                 original_text = transcript.get("text", "")
@@ -276,6 +291,8 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                 # 分段翻译，每段单独翻，对齐时间戳
                 all_en = []
                 for seg in transcript_segments:
+                    if is_cancelled():
+                        raise Exception("用户取消")
                     seg_text = seg.get("text", "").strip()
                     if seg_text:
                         en = translate_to_english_openai(seg_text, api_key)
@@ -485,6 +502,7 @@ def create_demo():
                         )
 
                         process_btn = gr.Button("🚀 开始处理", variant="primary", size="lg")
+                        cancel_btn = gr.Button("⏹️ 取消", variant="secondary", size="lg", visible=False)
 
                     with gr.Column(scale=1):
                         gr.Markdown("### 📤 输出")
@@ -807,21 +825,34 @@ def create_demo():
 
         # 按钮防重复：处理中禁用
         def disable_processing():
-            return gr.Button(interactive=False)
+            return gr.Button(interactive=False), gr.Button(visible=True)
 
         def enable_processing():
-            return gr.Button(interactive=True)
+            return gr.Button(interactive=True), gr.Button(visible=False)
+
+        def reset_cancel():
+            _cancel_event.clear()
+            return gr.Button(visible=False)
 
         process_btn.click(
+            fn=reset_cancel,
+            outputs=[cancel_btn]
+        ).then(
             fn=disable_processing,
-            outputs=[process_btn]
+            outputs=[process_btn, cancel_btn]
         ).then(
             fn=process_with_config,
             inputs=[video_input, target_face_input, model_size_input],
             outputs=[status_output, result_video, subtitle_download, error_output, log_output, overall_progress]
         ).then(
             fn=enable_processing,
-            outputs=[process_btn]
+            outputs=[process_btn, cancel_btn]
+        )
+
+        cancel_btn.click(
+            fn=cancel_processing,
+            inputs=None,
+            outputs=None
         )
 
     return demo
