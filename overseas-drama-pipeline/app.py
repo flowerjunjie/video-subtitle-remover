@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 import shutil
 import json
+import uuid
 from pathlib import Path
 from datetime import datetime
 
@@ -21,10 +22,20 @@ UPLOAD_DIR = os.path.join(WORKSPACE, "uploads")
 OUTPUT_DIR = os.path.join(WORKSPACE, "outputs")
 MODEL_DIR = os.path.join(WORKSPACE, "models")
 CONFIG_FILE = os.path.join(WORKSPACE, "config.json")
+MAX_FILE_SIZE_MB = 500
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(MODEL_DIR, exist_ok=True)
+
+# ============== Whisper 模型缓存（避免重复加载）=============
+_loaded_models = {}
+
+def get_whisper_model(model_size: str = "base"):
+    """加载 Whisper 模型并缓存，避免每次重新加载"""
+    if model_size not in _loaded_models:
+        _loaded_models[model_size] = whisper.load_model(model_size, download_root=MODEL_DIR)
+    return _loaded_models[model_size]
 
 # ============== 配置文件管理 ==============
 
@@ -48,16 +59,17 @@ def save_config(config: dict):
 
 # ============== 工具函数 ==============
 
-def extract_audio(video_path: str) -> str:
+def extract_audio(video_path: str, audio_path: str = None) -> str:
     """从视频提取音频"""
-    audio_path = video_path.replace(".mp4", "_audio.wav").replace(".mov", "_audio.wav")
+    if audio_path is None:
+        audio_path = video_path.replace(".mp4", "_audio.wav").replace(".mov", "_audio.wav")
     cmd = f'ffmpeg -y -i "{video_path}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "{audio_path}"'
     subprocess.run(cmd, shell=True, capture_output=True)
     return audio_path
 
 def transcribe_audio(audio_path: str, model_size: str = "base") -> dict:
     """Whisper 语音识别"""
-    model = whisper.load_model(model_size, download_root=MODEL_DIR)
+    model = get_whisper_model(model_size)
     result = model.transcribe(audio_path, language="zh")
     return result
 
@@ -93,6 +105,26 @@ Rules:
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"[Translated] {text}"
+
+def format_srt_time(seconds: float) -> str:
+    """将秒数转换为 SRT 时间格式 HH:MM:SS,mmm"""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    millis = int((seconds % 1) * 1000)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+
+def generate_srt_from_segments(segments: list, english_lines: list) -> str:
+    """根据 Whisper segments 生成真实 SRT 字幕"""
+    srt_lines = []
+    for i, (seg, en_text) in enumerate(zip(segments, english_lines), 1):
+        start = format_srt_time(seg.get("start", 0))
+        end = format_srt_time(seg.get("end", 0))
+        srt_lines.append(f"{i}")
+        srt_lines.append(f"{start} --> {end}")
+        srt_lines.append(en_text)
+        srt_lines.append("")
+    return "\n".join(srt_lines)
 
 def generate_tts_gtts(text: str, output_path: str) -> str:
     """生成 TTS 音频 (gTTS)"""
@@ -143,13 +175,18 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
 
     start_time = datetime.now()
     video_basename = os.path.splitext(os.path.basename(video_path))[0]
+    # UUID 保证输出文件不冲突
+    unique_id = uuid.uuid4().hex[:8]
+    session_prefix = f"{video_basename}_{unique_id}"
 
     try:
         # Step 1: 提取音频
         progress(0, desc="提取音频中...")
         step1_start = datetime.now()
+        audio_path = ""
         try:
-            audio_path = extract_audio(video_path)
+            audio_path = os.path.join(OUTPUT_DIR, f"{session_prefix}_audio.wav")
+            audio_path = extract_audio(video_path, audio_path)
             results["steps"].append({
                 "step": "extract_audio",
                 "status": "done",
@@ -169,15 +206,18 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         progress(0.2, desc="语音识别中...")
         step2_start = datetime.now()
         original_text = ""
+        transcript_segments = []
         try:
             if audio_path:
                 transcript = transcribe_audio(audio_path)
                 original_text = transcript.get("text", "")
+                transcript_segments = transcript.get("segments", [])
                 results["steps"].append({
                     "step": "transcribe",
                     "status": "done",
                     "text_length": len(original_text),
                     "original_text": original_text[:200] + "..." if len(original_text) > 200 else original_text,
+                    "segments_count": len(transcript_segments),
                     "time": (datetime.now() - step2_start).seconds
                 })
             else:
@@ -190,17 +230,31 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             })
             results["errors"].append(f"语音识别: {str(e)}")
             original_text = ""
+            transcript_segments = []
 
-        # Step 3: 翻译
+        # Step 3: 翻译（分段翻译保留时间戳对应）
         progress(0.4, desc="翻译中...")
         step3_start = datetime.now()
-        english_text = ""
+        english_lines = []
         try:
             api_key = config.get("openai_api_key", "")
-            if api_key:
+            if api_key and transcript_segments:
+                # 分段翻译，每段单独翻，对齐时间戳
+                all_en = []
+                for seg in transcript_segments:
+                    seg_text = seg.get("text", "").strip()
+                    if seg_text:
+                        en = translate_to_english_openai(seg_text, api_key)
+                        all_en.append(en)
+                    else:
+                        all_en.append("")
+                english_lines = all_en
+                english_text = " ".join(english_lines)
+            elif api_key:
                 english_text = translate_to_english_openai(original_text, api_key)
             else:
                 english_text = f"[Please configure OpenAI API Key to enable real translation] {original_text[:100]}..."
+                english_lines = [english_text]
 
             results["steps"].append({
                 "step": "translate",
@@ -216,6 +270,7 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             })
             results["errors"].append(f"翻译: {str(e)}")
             english_text = f"[Translation failed] {original_text[:100]}..."
+            english_lines = [english_text]
 
         # Step 4: TTS 生成
         progress(0.6, desc="生成配音中...")
@@ -223,7 +278,7 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         tts_path = ""
         try:
             tts_provider = config.get("tts_provider", "gtts")
-            tts_path = video_path.replace(".mp4", "_en.wav").replace(".mov", "_en.wav")
+            tts_path = os.path.join(OUTPUT_DIR, f"{session_prefix}_en.wav")
 
             if tts_provider == "elevenlabs":
                 elevenlabs_key = config.get("elevenlabs_api_key", "")
@@ -252,12 +307,14 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         step5_start = datetime.now()
         subtitle_path = ""
         try:
-            subtitle_path = os.path.join(OUTPUT_DIR, f"{video_basename}_en.srt")
-            # 生成简单的 SRT 字幕文件
+            subtitle_path = os.path.join(OUTPUT_DIR, f"{session_prefix}_en.srt")
+            if transcript_segments and english_lines:
+                srt_content = generate_srt_from_segments(transcript_segments, english_lines)
+            else:
+                # Fallback: 单段字幕
+                srt_content = f"1\n00:00:00,000 --> 00:00:05,000\n{english_text}\n"
             with open(subtitle_path, 'w', encoding='utf-8') as f:
-                f.write("1\n")
-                f.write("00:00:00 --> 00:00:05\n")
-                f.write(f"{english_text}\n\n")
+                f.write(srt_content)
             results["steps"].append({
                 "step": "subtitle",
                 "status": "done",
@@ -348,7 +405,8 @@ def create_demo():
                         video_input = gr.File(
                             label="上传中文短剧视频",
                             type="filepath",
-                            file_types=[".mp4", ".mov", ".avi"]
+                            file_types=[".mp4", ".mov", ".avi"],
+                            file_count="single"
                         )
 
                         target_face_input = gr.Image(
