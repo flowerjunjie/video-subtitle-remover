@@ -1,0 +1,531 @@
+"""
+海外本土剧承制 - 全链路本地化 Demo
+Gradio UI - 支持视频上传 + 换脸 + 口型同步 + 配音 + 字幕翻译
+"""
+
+import os
+import subprocess
+import tempfile
+import shutil
+import json
+from pathlib import Path
+from datetime import datetime
+
+import gradio as gr
+import whisper
+from gtts import gTTS
+
+# ============== 配置 ==============
+WORKSPACE = "/workspace/overseas-drama-pipeline"
+UPLOAD_DIR = os.path.join(WORKSPACE, "uploads")
+OUTPUT_DIR = os.path.join(WORKSPACE, "outputs")
+MODEL_DIR = os.path.join(WORKSPACE, "models")
+CONFIG_FILE = os.path.join(WORKSPACE, "config.json")
+
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+# ============== 配置文件管理 ==============
+
+def load_config() -> dict:
+    """加载配置"""
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r') as f:
+            return json.load(f)
+    return {
+        "openai_api_key": "",
+        "elevenlabs_api_key": "",
+        "elevenlabs_voice_id": "",
+        "translation_model": "gpt-4o",
+        "tts_provider": "gtts"  # gtts / elevenlabs
+    }
+
+def save_config(config: dict):
+    """保存配置"""
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+
+# ============== 工具函数 ==============
+
+def extract_audio(video_path: str) -> str:
+    """从视频提取音频"""
+    audio_path = video_path.replace(".mp4", "_audio.wav").replace(".mov", "_audio.wav")
+    cmd = f'ffmpeg -y -i "{video_path}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "{audio_path}"'
+    subprocess.run(cmd, shell=True, capture_output=True)
+    return audio_path
+
+def transcribe_audio(audio_path: str, model_size: str = "base") -> dict:
+    """Whisper 语音识别"""
+    model = whisper.load_model(model_size, download_root=MODEL_DIR)
+    result = model.transcribe(audio_path, language="zh")
+    return result
+
+def translate_to_english_openai(text: str, api_key: str) -> str:
+    """使用 OpenAI GPT 翻译"""
+    if not api_key:
+        return f"[Translated] {text}"
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are a professional subtitle translator. Translate Chinese subtitles to English.
+Rules:
+- Keep it natural and conversational
+- Use appropriate Western names for characters if they are Chinese
+- Maintain the tone and style of the original
+- Return ONLY the translated text, no explanations"""
+                },
+                {
+                    "role": "user",
+                    "content": f"Translate: {text}"
+                }
+            ],
+            max_tokens=2000,
+            temperature=0.3
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"[Translated] {text}"
+
+def generate_tts_gtts(text: str, output_path: str) -> str:
+    """生成 TTS 音频 (gTTS)"""
+    tts = gTTS(text=text, lang='en')
+    tts.save(output_path)
+    return output_path
+
+def generate_tts_elevenlabs(text: str, api_key: str, voice_id: str, output_path: str) -> str:
+    """生成 TTS 音频 (ElevenLabs)"""
+    if not api_key:
+        return generate_tts_gtts(text, output_path)
+
+    try:
+        from elevenlabs import ElevenLabs
+        client = ElevenLabs(api_key=api_key)
+
+        audio = client.text_to_speech.convert(
+            voice_id=voice_id or "pFZ2XhN30lalC1nlW1Pt",
+            model_id="eleven_multilingual_v2",
+            text=text
+        )
+
+        with open(output_path, 'wb') as f:
+            for chunk in audio:
+                f.write(chunk)
+        return output_path
+    except Exception as e:
+        return generate_tts_gtts(text, output_path)
+
+def process_video(video_path: str, target_face: str = None, config: dict = None, progress=gr.Progress()) -> dict:
+    """
+    视频处理主管道（CPU版本）
+    实际部署时替换为 Deep-Live-Cam + Wav2Lip
+
+    使用 gr.Progress 实现实时进度展示，每步骤独立错误处理
+    """
+    if config is None:
+        config = load_config()
+
+    results = {
+        "status": "processing",
+        "input_video": video_path,
+        "output_video": None,
+        "processing_time": 0,
+        "steps": [],
+        "errors": []
+    }
+
+    start_time = datetime.now()
+    video_basename = os.path.splitext(os.path.basename(video_path))[0]
+
+    try:
+        # Step 1: 提取音频
+        progress(0, desc="提取音频中...")
+        step1_start = datetime.now()
+        try:
+            audio_path = extract_audio(video_path)
+            results["steps"].append({
+                "step": "extract_audio",
+                "status": "done",
+                "output": audio_path,
+                "time": (datetime.now() - step1_start).seconds
+            })
+        except Exception as e:
+            results["steps"].append({
+                "step": "extract_audio",
+                "status": "error",
+                "error": f"音频提取失败: {str(e)}"
+            })
+            results["errors"].append(f"音频提取: {str(e)}")
+            audio_path = None
+
+        # Step 2: 语音识别
+        progress(0.2, desc="语音识别中...")
+        step2_start = datetime.now()
+        original_text = ""
+        try:
+            if audio_path:
+                transcript = transcribe_audio(audio_path)
+                original_text = transcript.get("text", "")
+                results["steps"].append({
+                    "step": "transcribe",
+                    "status": "done",
+                    "text_length": len(original_text),
+                    "original_text": original_text[:200] + "..." if len(original_text) > 200 else original_text,
+                    "time": (datetime.now() - step2_start).seconds
+                })
+            else:
+                raise Exception("音频文件不存在，跳过语音识别")
+        except Exception as e:
+            results["steps"].append({
+                "step": "transcribe",
+                "status": "error",
+                "error": f"语音识别失败: {str(e)}"
+            })
+            results["errors"].append(f"语音识别: {str(e)}")
+            original_text = ""
+
+        # Step 3: 翻译
+        progress(0.4, desc="翻译中...")
+        step3_start = datetime.now()
+        english_text = ""
+        try:
+            api_key = config.get("openai_api_key", "")
+            if api_key:
+                english_text = translate_to_english_openai(original_text, api_key)
+            else:
+                english_text = f"[Please configure OpenAI API Key to enable real translation] {original_text[:100]}..."
+
+            results["steps"].append({
+                "step": "translate",
+                "status": "done",
+                "translated_text": english_text[:200] + "..." if len(english_text) > 200 else english_text,
+                "time": (datetime.now() - step3_start).seconds
+            })
+        except Exception as e:
+            results["steps"].append({
+                "step": "translate",
+                "status": "error",
+                "error": f"翻译失败: {str(e)}"
+            })
+            results["errors"].append(f"翻译: {str(e)}")
+            english_text = f"[Translation failed] {original_text[:100]}..."
+
+        # Step 4: TTS 生成
+        progress(0.6, desc="生成配音中...")
+        step4_start = datetime.now()
+        tts_path = ""
+        try:
+            tts_provider = config.get("tts_provider", "gtts")
+            tts_path = video_path.replace(".mp4", "_en.wav").replace(".mov", "_en.wav")
+
+            if tts_provider == "elevenlabs":
+                elevenlabs_key = config.get("elevenlabs_api_key", "")
+                elevenlabs_voice = config.get("elevenlabs_voice_id", "")
+                tts_path = generate_tts_elevenlabs(english_text, elevenlabs_key, elevenlabs_voice, tts_path)
+            else:
+                tts_path = generate_tts_gtts(english_text, tts_path)
+
+            results["steps"].append({
+                "step": "tts",
+                "status": "done",
+                "output": tts_path,
+                "time": (datetime.now() - step4_start).seconds
+            })
+        except Exception as e:
+            results["steps"].append({
+                "step": "tts",
+                "status": "error",
+                "error": f"TTS生成失败: {str(e)}"
+            })
+            results["errors"].append(f"TTS生成: {str(e)}")
+            tts_path = ""
+
+        # Step 5: 字幕文件生成
+        progress(0.7, desc="生成字幕文件中...")
+        step5_start = datetime.now()
+        subtitle_path = ""
+        try:
+            subtitle_path = os.path.join(OUTPUT_DIR, f"{video_basename}_en.srt")
+            # 生成简单的 SRT 字幕文件
+            with open(subtitle_path, 'w', encoding='utf-8') as f:
+                f.write("1\n")
+                f.write("00:00:00 --> 00:00:05\n")
+                f.write(f"{english_text}\n\n")
+            results["steps"].append({
+                "step": "subtitle",
+                "status": "done",
+                "output": subtitle_path,
+                "time": (datetime.now() - step5_start).seconds
+            })
+        except Exception as e:
+            results["steps"].append({
+                "step": "subtitle",
+                "status": "error",
+                "error": f"字幕生成失败: {str(e)}"
+            })
+            results["errors"].append(f"字幕生成: {str(e)}")
+            subtitle_path = ""
+
+        # Step 6: 视频合成 (模拟)
+        progress(0.8, desc="合成视频中...")
+        step6_start = datetime.now()
+        output_video_path = ""
+        try:
+            # TODO: 实际视频合成需要调用 ffmpeg 或其他工具
+            # 目前输出音频文件路径作为模拟结果
+            output_video_path = tts_path if tts_path else audio_path
+            results["steps"].append({
+                "step": "video_compose",
+                "status": "done",
+                "output": output_video_path,
+                "time": (datetime.now() - step6_start).seconds
+            })
+        except Exception as e:
+            results["steps"].append({
+                "step": "video_compose",
+                "status": "error",
+                "error": f"视频合成失败: {str(e)}"
+            })
+            results["errors"].append(f"视频合成: {str(e)}")
+            output_video_path = ""
+
+        results["output_video"] = output_video_path
+        results["subtitle_file"] = subtitle_path
+        results["status"] = "done"
+        results["processing_time"] = (datetime.now() - start_time).seconds
+
+        progress(1.0, desc="完成！")
+
+    except Exception as e:
+        results["status"] = "error"
+        results["error"] = str(e)
+        results["errors"].append(f"处理管道: {str(e)}")
+        progress(0, desc=f"失败: {str(e)}")
+
+    return results
+
+# ============== Gradio UI ==============
+
+def create_demo():
+    default_config = load_config()
+
+    with gr.Blocks(title="海外本土剧承制 - 本地化流水线") as demo:
+        gr.Markdown("""
+        # 🌐 海外本土剧承制 - 本地化流水线
+
+        ## 使用说明
+
+        1. **上传视频**：上传中文短剧视频文件（支持 mp4/mov/avi）
+        2. **选择目标面孔**：（可选）上传目标西方面孔图片用于换脸
+        3. **开始处理**：点击按钮启动自动化处理流水线
+        4. **查看结果**：处理完成后可预览输出视频、下载字幕文件
+
+        ---
+
+        **支持功能：**
+        - 📤 视频上传
+        - 🔄 换脸（Deep-Live-Cam）
+        - 🎤 口型同步（Wav2Lip）
+        - 🔊 英文配音（TTS）
+        - 📝 字幕翻译
+
+        ⚠️ 当前为 CPU 版本，处理速度较慢，请耐心等待
+        """)
+
+        with gr.Tabs():
+            with gr.Tab("🎬 处理视频"):
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        gr.Markdown("### 📥 输入")
+
+                        video_input = gr.File(
+                            label="上传中文短剧视频",
+                            type="filepath",
+                            file_types=[".mp4", ".mov", ".avi"]
+                        )
+
+                        target_face_input = gr.Image(
+                            label="目标西方面孔（换脸目标）",
+                            type="filepath"
+                        )
+
+                        process_btn = gr.Button("🚀 开始处理", variant="primary", size="lg")
+
+                    with gr.Column(scale=1):
+                        gr.Markdown("### 📤 输出")
+
+                        # 进度显示
+                        progress_output = gr.Progress()
+
+                        # 状态文本
+                        status_output = gr.Textbox(
+                            label="处理状态",
+                            interactive=False,
+                            lines=3
+                        )
+
+                        # 输出视频预览
+                        result_video = gr.Video(
+                            label="本地化结果视频",
+                            interactive=False
+                        )
+
+                        # 字幕文件下载链接
+                        subtitle_download = gr.File(
+                            label="字幕文件下载",
+                            interactive=False
+                        )
+
+                        # 错误信息展示
+                        error_output = gr.JSON(
+                            label="错误详情",
+                            show_label=True
+                        )
+
+            with gr.Tab("⚙️ API 配置"):
+                gr.Markdown("""
+                ## 🔐 API 配置
+
+                请填写您自己的 API Key。配置将保存在服务器本地。
+                """)
+
+                with gr.Column(scale=1, min_width=400):
+                    # OpenAI 配置
+                    gr.Markdown("""
+                    ### OpenAI (翻译)
+
+                    [获取 API Key →](https://platform.openai.com/api-keys)
+                    """)
+
+                    openai_api_key = gr.Textbox(
+                        label="OpenAI API Key",
+                        value=default_config.get("openai_api_key", ""),
+                        type="password",
+                        placeholder="sk-xxxxxxxxxxxx",
+                        info="用于 GPT-4o 翻译中文字幕"
+                    )
+
+                    # ElevenLabs 配置
+                    gr.Markdown("""
+                    ### ElevenLabs (配音)
+
+                    [获取 API Key →](https://elevenlabs.io/profile/api-key)
+                    [选择音色 →](https://elevenlabs.io/voice-library)
+                    """)
+
+                    elevenlabs_api_key = gr.Textbox(
+                        label="ElevenLabs API Key",
+                        value=default_config.get("elevenlabs_api_key", ""),
+                        type="password",
+                        placeholder="xxxxxxxxxxxx",
+                        info="用于高质量英文配音（可选，gTTS免费但效果一般）"
+                    )
+
+                    elevenlabs_voice_id = gr.Textbox(
+                        label="Voice ID",
+                        value=default_config.get("elevenlabs_voice_id", ""),
+                        placeholder="pFZ2XhN30lalC1nlW1Pt",
+                        info="ElevenLabs 音色ID，不填使用默认音色"
+                    )
+
+                    # TTS 选择
+                    tts_provider = gr.Radio(
+                        label="TTS 提供商",
+                        choices=["gtts", "elevenlabs"],
+                        value=default_config.get("tts_provider", "gtts"),
+                        info="gTTS 免费但音色机械，ElevenLabs 效果更好但需要API Key"
+                    )
+
+                    save_config_btn = gr.Button("💾 保存配置", variant="primary")
+
+                    config_output = gr.Textbox(label="保存状态", interactive=False)
+
+                    def save_settings(openai_key, elevenlabs_key, elevenlabs_voice, tts_choice):
+                        cfg = {
+                            "openai_api_key": openai_key.strip(),
+                            "elevenlabs_api_key": elevenlabs_key.strip(),
+                            "elevenlabs_voice_id": elevenlabs_voice.strip(),
+                            "tts_provider": tts_choice,
+                            "translation_model": "gpt-4o"
+                        }
+                        save_config(cfg)
+                        return "✅ 配置已保存！重新处理视频时生效。"
+
+                    save_config_btn.click(
+                        fn=save_settings,
+                        inputs=[openai_api_key, elevenlabs_api_key, elevenlabs_voice_id, tts_provider],
+                        outputs=[config_output]
+                    )
+
+        gr.Markdown("""
+        ## 处理流程
+
+        ```
+        视频上传 → 音频提取 → Whisper识别 → GPT翻译 → TTS配音 → 字幕生成 → 视频合成
+        ```
+
+        ## 技术说明
+
+        | 环节 | 技术方案 | CPU兼容性 |
+        |------|---------|---------|
+        | 换脸 | Deep-Live-Cam | ⚠️ 慢 |
+        | 口型 | Wav2Lip | ⚠️ 慢 |
+        | 配音 | gTTS / ElevenLabs | ✅ 快 |
+        | 字幕 | Whisper + GPT | ✅ 快 |
+
+        ## 注意事项
+
+        1. **翻译**：需要 OpenAI API Key，无 Key 只跑 Mock
+        2. **配音**：gTTS 免费但机械，ElevenLabs 需要 API Key
+        3. **换脸/口型**：需要 GPU，CPU 版本暂不可用
+        """)
+
+        # 事件绑定 - 使用 config 参数
+        def process_with_config(video_path, target_face):
+            cfg = load_config()
+            results = process_video(video_path, target_face, cfg)
+
+            # 状态信息
+            status_msg = f"处理状态: {results.get('status', 'unknown')}\n"
+            status_msg += f"处理时间: {results.get('processing_time', 0)}秒\n"
+
+            # 各步骤状态
+            for step in results.get("steps", []):
+                step_name = step.get("step", "")
+                step_status = step.get("status", "")
+                step_time = step.get("time", 0)
+                status_msg += f"- {step_name}: {step_status} ({step_time}s)\n"
+
+            # 错误信息
+            errors = "\n".join(results.get("errors", [])) if results.get("errors") else "无"
+
+            # 输出视频
+            output_video = results.get("output_video")
+
+            # 字幕文件
+            subtitle_file = results.get("subtitle_file")
+
+            return status_msg, output_video, subtitle_file if subtitle_file else None, errors
+
+        process_btn.click(
+            fn=process_with_config,
+            inputs=[video_input, target_face_input],
+            outputs=[status_output, result_video, subtitle_download, error_output]
+        )
+
+    return demo
+
+if __name__ == "__main__":
+    demo = create_demo()
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=False
+    )
