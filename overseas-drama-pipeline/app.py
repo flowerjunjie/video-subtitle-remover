@@ -450,6 +450,8 @@ def create_demo():
                             file_count="single"
                         )
 
+                        clear_btn = gr.Button("🗑️ 清空上传", size="sm")
+
                         # 上传后视频预览
                         video_preview = gr.Video(
                             label="视频预览",
@@ -494,6 +496,13 @@ def create_demo():
                         result_video = gr.Video(
                             label="本地化结果视频",
                             interactive=False
+                        )
+
+                        # 整体进度百分比
+                        overall_progress = gr.Number(
+                            label="整体进度",
+                            interactive=False,
+                            value=0
                         )
 
                         # 处理日志
@@ -719,11 +728,17 @@ def create_demo():
             # 日志
             log_lines = []
             log_lines.append(f"[{datetime.now().strftime('%H:%M:%S')}] 开始处理")
+            done_count = 0
+            total_count = 0
             for step in results.get("steps", []):
                 log_lines.append(f"[{datetime.now().strftime('%H:%M:%S')}] {step.get('step')}: {step.get('status')} ({step.get('time',0)}s)")
+                total_count += 1
+                if step.get('status') == 'done':
+                    done_count += 1
             log_msg = "\n".join(log_lines)
+            overall_pct = int(done_count / total_count * 100) if total_count > 0 else 0
 
-            return status_msg, output_video, subtitle_file if subtitle_file else None, errors, log_msg
+            return status_msg, output_video, subtitle_file if subtitle_file else None, errors, log_msg, overall_pct
 
         # 上传后自动预览视频 + 预估时间
         def update_preview_and_estimate(video_path, model_size):
@@ -756,6 +771,15 @@ def create_demo():
             outputs=[video_preview, estimate_output]
         )
 
+        # 清空上传
+        def clear_upload():
+            return None, None, "", "", 0
+
+        clear_btn.click(
+            fn=clear_upload,
+            outputs=[video_input, video_preview, estimate_output, log_output, overall_progress]
+        )
+
         # 按钮防重复：处理中禁用
         def disable_processing():
             return gr.Button(interactive=False)
@@ -769,7 +793,7 @@ def create_demo():
         ).then(
             fn=process_with_config,
             inputs=[video_input, target_face_input, model_size_input],
-            outputs=[status_output, result_video, subtitle_download, error_output, log_output]
+            outputs=[status_output, result_video, subtitle_download, error_output, log_output, overall_progress]
         ).then(
             fn=enable_processing,
             outputs=[process_btn]
