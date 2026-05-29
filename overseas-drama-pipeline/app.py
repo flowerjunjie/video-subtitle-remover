@@ -477,6 +477,13 @@ def create_demo():
                             show_label=True
                         )
 
+                        metadata_output = gr.Textbox(
+                            label="视频信息",
+                            interactive=False,
+                            lines=1,
+                            show_label=True
+                        )
+
                         process_btn = gr.Button("🚀 开始处理", variant="primary", size="lg")
 
                     with gr.Column(scale=1):
@@ -740,14 +747,17 @@ def create_demo():
 
             return status_msg, output_video, subtitle_file if subtitle_file else None, errors, log_msg, overall_pct
 
-        # 上传后自动预览视频 + 预估时间
+        # 上传后自动预览视频 + 预估时间 + 元数据
         def update_preview_and_estimate(video_path, model_size):
             estimate = ""
+            metadata = ""
             if video_path:
                 try:
-                    cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 "{video_path}"'
-                    duration_str = subprocess.check_output(cmd, shell=True, text=True).strip()
+                    cmd = f'ffprobe -v quiet -show_entries format=duration,size -of csv=p=0 "{video_path}"'
+                    result = subprocess.check_output(cmd, shell=True, text=subprocess.DEVNULL).strip()
+                    duration_str, size_str = result.split(',')
                     duration_sec = float(duration_str)
+                    size_bytes = int(size_str)
                     # 粗略估算：base模型约 0.5x realtime，medium 约 2x，large 约 3x
                     multiplier = {"tiny": 0.3, "base": 0.5, "small": 1.0, "medium": 2.0, "large": 3.0}.get(model_size, 0.5)
                     estimated_sec = duration_sec * multiplier
@@ -755,29 +765,44 @@ def create_demo():
                         estimate = f"约 {int(estimated_sec)} 秒"
                     else:
                         estimate = f"约 {int(estimated_sec // 60)} 分钟"
+                    # 视频元数据
+                    cmd2 = f'ffprobe -v quiet -show_entries stream=width,height,bit_rate -of csv=p=0 "{video_path}"'
+                    info = subprocess.check_output(cmd2, shell=True, text=subprocess.DEVNULL).strip().split('\\n')
+                    width = height = bitrate = ""
+                    for line in info:
+                        parts = line.split(',')
+                        if len(parts) >= 3:
+                            w, h, br = parts[0], parts[1], parts[2]
+                            if not width and w.isdigit():
+                                width, height, bitrate = w, h, br
+                                break
+                    size_mb = size_bytes / (1024 * 1024)
+                    bitrate_kbps = int(bitrate) // 1000 if bitrate.isdigit() else "?"
+                    metadata = f"📐 {width}×{height} | 📊 {bitrate_kbps} kb/s | 💾 {size_mb:.1f} MB | ⏱️ {int(duration_sec)} 秒"
                 except Exception:
                     estimate = "无法预估"
-            return video_path, estimate
+                    metadata = ""
+            return video_path, estimate, metadata
 
         video_input.change(
             fn=update_preview_and_estimate,
             inputs=[video_input, model_size_input],
-            outputs=[video_preview, estimate_output]
+            outputs=[video_preview, estimate_output, metadata_output]
         )
 
         model_size_input.change(
             fn=update_preview_and_estimate,
             inputs=[video_input, model_size_input],
-            outputs=[video_preview, estimate_output]
+            outputs=[video_preview, estimate_output, metadata_output]
         )
 
         # 清空上传
         def clear_upload():
-            return None, None, "", "", 0
+            return None, None, "", "", "", 0
 
         clear_btn.click(
             fn=clear_upload,
-            outputs=[video_input, video_preview, estimate_output, log_output, overall_progress]
+            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress]
         )
 
         # 按钮防重复：处理中禁用
