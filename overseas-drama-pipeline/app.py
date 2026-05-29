@@ -104,7 +104,15 @@ Rules:
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"[Translated] {text}"
+        error_msg = str(e)
+        if "Incorrect API key" in error_msg or "invalid_api_key" in error_msg:
+            return f"[Error: API Key 无效，请检查 OpenAI API Key 配置]"
+        elif "Rate limit" in error_msg or "429" in error_msg:
+            return f"[Error: OpenAI 请求频率超限，请稍后再试]"
+        elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
+            return f"[Error: OpenAI API 连接失败，请检查网络]"
+        else:
+            return f"[Translated] {text}"
 
 def format_srt_time(seconds: float) -> str:
     """将秒数转换为 SRT 时间格式 HH:MM:SS,mmm"""
@@ -152,6 +160,13 @@ def generate_tts_elevenlabs(text: str, api_key: str, voice_id: str, output_path:
                 f.write(chunk)
         return output_path
     except Exception as e:
+        error_msg = str(e)
+        if "api key" in error_msg.lower() or "invalid" in error_msg.lower():
+            print(f"[ElevenLabs API Key 无效，切换到 gTTS]")
+        elif "Rate limit" in error_msg or "429" in error_msg:
+            print(f"[ElevenLabs 请求频率超限，切换到 gTTS]")
+        elif "connection" in error_msg.lower():
+            print(f"[ElevenLabs 连接失败，切换到 gTTS]")
         return generate_tts_gtts(text, output_path)
 
 def process_video(video_path: str, target_face: str = None, config: dict = None, progress=gr.Progress(), model_size: str = "base") -> dict:
