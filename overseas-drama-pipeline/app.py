@@ -179,7 +179,16 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
     if config is None:
         config = load_config()
 
-    # 文件大小校验
+    # 文件大小校验（提前初始化 results 以便错误处理）
+    results = {
+        "status": "processing",
+        "input_video": video_path,
+        "output_video": None,
+        "processing_time": 0,
+        "steps": [],
+        "errors": []
+    }
+
     file_size_mb = os.path.getsize(video_path) / (1024 * 1024)
     if file_size_mb > MAX_FILE_SIZE_MB:
         results["status"] = "error"
@@ -197,15 +206,6 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             return results
     except Exception:
         pass  # 时长获取失败不影响主流程
-
-    results = {
-        "status": "processing",
-        "input_video": video_path,
-        "output_video": None,
-        "processing_time": 0,
-        "steps": [],
-        "errors": []
-    }
 
     start_time = datetime.now()
     video_basename = os.path.splitext(os.path.basename(video_path))[0]
