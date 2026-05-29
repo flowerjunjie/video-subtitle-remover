@@ -76,7 +76,9 @@ def extract_audio(video_path: str, audio_path: str = None) -> str:
     if audio_path is None:
         audio_path = video_path.replace(".mp4", "_audio.wav").replace(".mov", "_audio.wav")
     cmd = f'ffmpeg -y -i "{video_path}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "{audio_path}"'
-    subprocess.run(cmd, shell=True, capture_output=True)
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"ffmpeg 音频提取失败: {result.stderr or '未知错误'}")
     return audio_path
 
 def transcribe_audio(audio_path: str, model_size: str = "base", progress=None) -> dict:
@@ -294,7 +296,8 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             if api_key and transcript_segments:
                 # 分段翻译，每段单独翻，对齐时间戳
                 all_en = []
-                for seg in transcript_segments:
+                total_segs = len(transcript_segments)
+                for i, seg in enumerate(transcript_segments):
                     if is_cancelled():
                         raise Exception("用户取消")
                     seg_text = seg.get("text", "").strip()
@@ -303,6 +306,8 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                         all_en.append(en)
                     else:
                         all_en.append("")
+                    # 中间进度：0.4 → 0.6
+                    progress(0.4 + 0.2 * (i + 1) / total_segs, desc=f"翻译中 {i+1}/{total_segs}...")
                 english_lines = all_en
                 english_text = " ".join(english_lines)
             elif api_key:
