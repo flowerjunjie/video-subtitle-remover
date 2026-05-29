@@ -593,7 +593,27 @@ def create_demo():
 
                     config_output = gr.Textbox(label="保存状态", interactive=False)
 
+                    def validate_api_key(openai_key):
+                        """保存时验证 API Key 有效性"""
+                        if not openai_key.strip():
+                            return "⚠️ OpenAI API Key 未填写"
+                        try:
+                            from openai import OpenAI
+                            client = OpenAI(api_key=openai_key.strip())
+                            client.models.list()
+                            return "✅ OpenAI API Key 验证通过"
+                        except Exception as e:
+                            err = str(e)
+                            if "incorrect" in err.lower() or "invalid" in err.lower():
+                                return f"❌ OpenAI API Key 无效: {err[:50]}"
+                            else:
+                                return f"⚠️ OpenAI Key 验证异常: {err[:50]}"
+
                     def save_settings(openai_key, elevenlabs_key, elevenlabs_voice, tts_choice):
+                        # 先验证再保存
+                        validation = validate_api_key(openai_key)
+                        if "❌" in validation:
+                            return validation
                         cfg = {
                             "openai_api_key": openai_key.strip(),
                             "elevenlabs_api_key": elevenlabs_key.strip(),
@@ -602,7 +622,7 @@ def create_demo():
                             "translation_model": "gpt-4o"
                         }
                         save_config(cfg)
-                        return "✅ 配置已保存！重新处理视频时生效。"
+                        return f"{validation} | 配置已保存"
 
                     save_config_btn.click(
                         fn=save_settings,
