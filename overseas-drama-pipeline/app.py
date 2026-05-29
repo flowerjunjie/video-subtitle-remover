@@ -186,6 +186,18 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         results["errors"].append(f"文件过大 ({file_size_mb:.1f}MB)，请上传 {MAX_FILE_SIZE_MB}MB 以内的视频")
         return results
 
+    # 视频时长校验（防止超长音频 OOM）
+    try:
+        cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 "{video_path}"'
+        duration_str = subprocess.check_output(cmd, shell=True, text=True).strip()
+        duration_sec = float(duration_str)
+        if duration_sec > 3600:
+            results["status"] = "error"
+            results["errors"].append(f"视频过长 ({int(duration_sec//60)}分钟)，请上传 60 分钟以内的视频")
+            return results
+    except Exception:
+        pass  # 时长获取失败不影响主流程
+
     results = {
         "status": "processing",
         "input_video": video_path,
@@ -438,6 +450,12 @@ def create_demo():
                             file_count="single"
                         )
 
+                        # 上传后视频预览
+                        video_preview = gr.Video(
+                            label="视频预览",
+                            interactive=False
+                        )
+
                         target_face_input = gr.Image(
                             label="目标西方面孔（换脸目标）",
                             type="filepath"
@@ -469,6 +487,14 @@ def create_demo():
                         result_video = gr.Video(
                             label="本地化结果视频",
                             interactive=False
+                        )
+
+                        # 处理日志
+                        log_output = gr.Textbox(
+                            label="处理日志",
+                            interactive=False,
+                            lines=5,
+                            show_label=True
                         )
 
                         # 错误信息展示
@@ -634,7 +660,21 @@ def create_demo():
             # 字幕文件
             subtitle_file = results.get("subtitle_file")
 
-            return status_msg, output_video, subtitle_file if subtitle_file else None, errors
+            # 日志
+            log_lines = []
+            log_lines.append(f"[{datetime.now().strftime('%H:%M:%S')}] 开始处理")
+            for step in results.get("steps", []):
+                log_lines.append(f"[{datetime.now().strftime('%H:%M:%S')}] {step.get('step')}: {step.get('status')} ({step.get('time',0)}s)")
+            log_msg = "\n".join(log_lines)
+
+            return status_msg, output_video, subtitle_file if subtitle_file else None, errors, log_msg
+
+        # 上传后自动预览视频
+        video_input.change(
+            fn=lambda x: x,
+            inputs=[video_input],
+            outputs=[video_preview]
+        )
 
         # 按钮防重复：处理中禁用
         def disable_processing():
@@ -649,7 +689,7 @@ def create_demo():
         ).then(
             fn=process_with_config,
             inputs=[video_input, target_face_input, model_size_input],
-            outputs=[status_output, result_video, subtitle_download, error_output]
+            outputs=[status_output, result_video, subtitle_download, error_output, log_output]
         ).then(
             fn=enable_processing,
             outputs=[process_btn]
