@@ -468,6 +468,13 @@ def create_demo():
                             info="tiny最快精度低，large最慢精度高；16G内存建议 base 或 small"
                         )
 
+                        estimate_output = gr.Textbox(
+                            label="预估处理时间",
+                            interactive=False,
+                            lines=1,
+                            show_label=True
+                        )
+
                         process_btn = gr.Button("🚀 开始处理", variant="primary", size="lg")
 
                     with gr.Column(scale=1):
@@ -523,17 +530,46 @@ def create_demo():
 
                 def list_output_files():
                     files = []
+                    total_size_mb = 0
                     if os.path.exists(OUTPUT_DIR):
                         for f in os.listdir(OUTPUT_DIR):
                             fp = os.path.join(OUTPUT_DIR, f)
                             if os.path.isfile(fp):
                                 files.append(fp)
+                                total_size_mb += os.path.getsize(fp) / (1024 * 1024)
                     return files
 
-                output_files_list.value = list_output_files()
+                def cleanup_old_files():
+                    cleaned = 0
+                    if os.path.exists(OUTPUT_DIR):
+                        import time
+                        cutoff = time.time() - 7 * 24 * 3600
+                        for f in os.listdir(OUTPUT_DIR):
+                            fp = os.path.join(OUTPUT_DIR, f)
+                            if os.path.isfile(fp) and os.path.getmtime(fp) < cutoff:
+                                os.remove(fp)
+                                cleaned += 1
+                    return f"已清理 {cleaned} 个文件"
+
+                def list_output_files_with_size():
+                    files = []
+                    total_size_mb = 0
+                    if os.path.exists(OUTPUT_DIR):
+                        for f in os.listdir(OUTPUT_DIR):
+                            fp = os.path.join(OUTPUT_DIR, f)
+                            if os.path.isfile(fp):
+                                files.append(fp)
+                                total_size_mb += os.path.getsize(fp) / (1024 * 1024)
+                    return files
+
+                output_files_list.value = list_output_files_with_size()
 
                 refresh_btn = gr.Button("🔄 刷新列表")
-                refresh_btn.click(fn=list_output_files, outputs=[output_files_list])
+                refresh_btn.click(fn=list_output_files_with_size, outputs=[output_files_list])
+
+                cleanup_btn = gr.Button("🗑️ 清理7天前文件")
+                cleanup_output = gr.Textbox(label="清理结果", interactive=False, lines=1)
+                cleanup_btn.click(fn=cleanup_old_files, outputs=[cleanup_output])
 
             with gr.Tab("⚙️ API 配置"):
                 gr.Markdown("""
@@ -689,11 +725,35 @@ def create_demo():
 
             return status_msg, output_video, subtitle_file if subtitle_file else None, errors, log_msg
 
-        # 上传后自动预览视频
+        # 上传后自动预览视频 + 预估时间
+        def update_preview_and_estimate(video_path, model_size):
+            estimate = ""
+            if video_path:
+                try:
+                    cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 "{video_path}"'
+                    duration_str = subprocess.check_output(cmd, shell=True, text=True).strip()
+                    duration_sec = float(duration_str)
+                    # 粗略估算：base模型约 0.5x realtime，medium 约 2x，large 约 3x
+                    multiplier = {"tiny": 0.3, "base": 0.5, "small": 1.0, "medium": 2.0, "large": 3.0}.get(model_size, 0.5)
+                    estimated_sec = duration_sec * multiplier
+                    if estimated_sec < 60:
+                        estimate = f"约 {int(estimated_sec)} 秒"
+                    else:
+                        estimate = f"约 {int(estimated_sec // 60)} 分钟"
+                except Exception:
+                    estimate = "无法预估"
+            return video_path, estimate
+
         video_input.change(
-            fn=lambda x: x,
-            inputs=[video_input],
-            outputs=[video_preview]
+            fn=update_preview_and_estimate,
+            inputs=[video_input, model_size_input],
+            outputs=[video_preview, estimate_output]
+        )
+
+        model_size_input.change(
+            fn=update_preview_and_estimate,
+            inputs=[video_input, model_size_input],
+            outputs=[video_preview, estimate_output]
         )
 
         # 按钮防重复：处理中禁用
