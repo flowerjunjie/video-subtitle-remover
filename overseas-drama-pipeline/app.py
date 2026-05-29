@@ -857,6 +857,26 @@ def create_demo():
 
     return demo
 
+    # 键盘快捷键 Ctrl+Enter 触发处理
+    def handle_keydown(e):
+        if e.key == "Enter" and (e.ctrl_key or e.meta_key):
+            if process_btn.interactive:
+                process_btn.click()
+
+    demo.load(
+        fn=lambda: None,
+        inputs=None,
+        outputs=None,
+        _js="""() => {
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    document.querySelector('button[data-testid="button-🚀-开始处理"]')?.click();
+                }
+            });
+        }"""
+    )
+
 if __name__ == "__main__":
     demo = create_demo()
     demo.launch(
