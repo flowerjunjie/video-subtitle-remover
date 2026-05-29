@@ -557,6 +557,8 @@ def create_demo():
         1. **翻译**：需要 OpenAI API Key，无 Key 只跑 Mock
         2. **配音**：gTTS 免费但机械，ElevenLabs 需要 API Key
         3. **换脸/口型**：需要 GPU，CPU 版本暂不可用
+
+        4. **模型首次加载**：Whisper base 模型约 75MB，首次加载后缓存，后续处理更快
         """)
 
         # 事件绑定 - 使用 config 参数
