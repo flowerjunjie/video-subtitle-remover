@@ -41,9 +41,11 @@ def is_cancelled():
 def cancel_processing():
     _cancel_event.set()
 
-def get_whisper_model(model_size: str = "base"):
+def get_whisper_model(model_size: str = "base", progress=None):
     """加载 Whisper 模型并缓存，避免每次重新加载"""
     if model_size not in _loaded_models:
+        if progress is not None:
+            progress(0, desc=f"加载 Whisper {model_size} 模型中...")
         _loaded_models[model_size] = whisper.load_model(model_size, download_root=MODEL_DIR)
     return _loaded_models[model_size]
 
@@ -77,9 +79,11 @@ def extract_audio(video_path: str, audio_path: str = None) -> str:
     subprocess.run(cmd, shell=True, capture_output=True)
     return audio_path
 
-def transcribe_audio(audio_path: str, model_size: str = "base") -> dict:
+def transcribe_audio(audio_path: str, model_size: str = "base", progress=None) -> dict:
     """Whisper 语音识别"""
-    model = get_whisper_model(model_size)
+    model = get_whisper_model(model_size, progress)
+    if progress is not None:
+        progress(0.2, desc="Whisper 模型已加载，开始识别...")
     result = model.transcribe(audio_path, language="zh")
     return result
 
@@ -258,7 +262,7 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             if is_cancelled():
                 raise Exception("用户取消")
             if audio_path:
-                transcript = transcribe_audio(audio_path, model_size)
+                transcript = transcribe_audio(audio_path, model_size, progress)
                 original_text = transcript.get("text", "")
                 transcript_segments = transcript.get("segments", [])
                 results["steps"].append({
