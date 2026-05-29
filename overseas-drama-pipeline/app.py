@@ -468,7 +468,13 @@ def create_demo():
                             label="上传中文短剧视频",
                             type="filepath",
                             file_types=[".mp4", ".mov", ".avi"],
-                            file_count="single"
+                            file_count="multiple"
+                        )
+
+                        batch_toggle = gr.Checkbox(
+                            label="批量模式（同时处理多个视频）",
+                            value=False,
+                            info="启用后将顺序处理多个视频"
                         )
 
                         clear_btn = gr.Button("🗑️ 清空上传", size="sm")
@@ -730,8 +736,43 @@ def create_demo():
         """)
 
         # 事件绑定 - 使用 config 参数
-        def process_with_config(video_path, target_face, model_size):
+        def process_with_config(video_path, target_face, model_size, batch_mode=False):
             cfg = load_config()
+
+            # 批量模式
+            if batch_mode and isinstance(video_path, (list, tuple)):
+                all_status = []
+                all_outputs = []
+                all_errors = []
+                all_logs = []
+
+                for i, vp in enumerate(video_path):
+                    if is_cancelled():
+                        all_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] 批次处理已取消")
+                        break
+                    all_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] 开始处理第 {i+1}/{len(video_path)} 个视频")
+
+                    results = process_video(vp, target_face, cfg, model_size=model_size)
+
+                    status_msg = f"视频 {i+1}: {results.get('status', 'unknown')} ({results.get('processing_time', 0)}秒)"
+                    output_video = results.get("output_video")
+                    errors = "\n".join(results.get("errors", [])) if results.get("errors") else "无"
+
+                    all_status.append(status_msg)
+                    all_outputs.append(output_video)
+                    all_errors.append(errors)
+
+                # 汇总
+                combined_status = "\n".join(all_status)
+                combined_errors = "\n---\n".join(all_errors)
+                combined_logs = "\n".join(all_logs)
+
+                # 第一个输出视频作为预览
+                first_video = all_outputs[0] if all_outputs else None
+
+                return combined_status, first_video, None, combined_errors, combined_logs, 100
+
+            # 单文件模式
             results = process_video(video_path, target_face, cfg, model_size=model_size)
 
             # 状态信息
@@ -820,11 +861,11 @@ def create_demo():
 
         # 清空上传
         def clear_upload():
-            return None, None, "", "", "", 0
+            return None, None, "", "", "", 0, False
 
         clear_btn.click(
             fn=clear_upload,
-            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress]
+            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress, batch_toggle]
         )
 
         # 按钮防重复：处理中禁用
@@ -846,7 +887,7 @@ def create_demo():
             outputs=[process_btn, cancel_btn]
         ).then(
             fn=process_with_config,
-            inputs=[video_input, target_face_input, model_size_input],
+            inputs=[video_input, target_face_input, model_size_input, batch_toggle],
             outputs=[status_output, result_video, subtitle_download, error_output, log_output, overall_progress]
         ).then(
             fn=enable_processing,
