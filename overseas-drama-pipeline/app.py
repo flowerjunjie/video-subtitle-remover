@@ -324,6 +324,7 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                 english_text = " ".join(english_lines)
             elif api_key:
                 english_text = translate_to_english_openai(original_text, api_key)
+                english_lines = [english_text]
             else:
                 english_text = f"[Please configure OpenAI API Key to enable real translation] {original_text[:100]}..."
                 english_lines = [english_text]
