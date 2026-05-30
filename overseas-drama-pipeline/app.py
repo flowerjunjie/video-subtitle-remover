@@ -722,10 +722,28 @@ def create_demo():
                                 return f"⚠️ OpenAI Key 验证异常: {err[:50]}"
 
                     def save_settings(openai_key, elevenlabs_key, elevenlabs_voice, tts_choice):
-                        # 先验证再保存
-                        validation = validate_api_key(openai_key)
-                        if "❌" in validation:
-                            return validation
+                        """保存配置，ElevenLabs Key 在选择该 provider 时验证"""
+                        # 先验证 OpenAI
+                        openai_validation = validate_api_key(openai_key)
+                        if "❌" in openai_validation:
+                            return openai_validation
+
+                        # ElevenLabs 仅在选择时验证
+                        if tts_choice == "elevenlabs" and elevenlabs_key.strip():
+                            try:
+                                from elevenlabs import ElevenLabs
+                                client = ElevenLabs(api_key=elevenlabs_key.strip())
+                                # 尝试调用 API 验证
+                                list(client.voices.get_all())
+                            except Exception as e:
+                                err = str(e)
+                                if "api key" in err.lower() or "invalid" in err.lower() or "unauthorized" in err.lower():
+                                    return f"❌ ElevenLabs API Key 无效: {err[:50]}"
+                                elif "quota" in err.lower() or "limit" in err.lower():
+                                    return f"⚠️ ElevenLabs 请求超限: {err[:50]}"
+                                else:
+                                    return f"⚠️ ElevenLabs 验证异常: {err[:50]}"
+
                         cfg = {
                             "openai_api_key": openai_key.strip(),
                             "elevenlabs_api_key": elevenlabs_key.strip(),
@@ -734,7 +752,7 @@ def create_demo():
                             "translation_model": "gpt-4o"
                         }
                         save_config(cfg)
-                        return f"{validation} | 配置已保存"
+                        return f"{openai_validation} | 配置已保存"
 
                     save_config_btn.click(
                         fn=save_settings,
