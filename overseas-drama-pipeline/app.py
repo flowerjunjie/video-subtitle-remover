@@ -757,7 +757,8 @@ def create_demo():
                         break
                     all_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] 开始处理第 {i+1}/{len(video_path)} 个视频")
 
-                    results = process_video(vp, target_face, cfg, model_size=model_size)
+                    results = process_video(vp, target_face, cfg, model_size=model_size, progress=progress)
+                    progress(0.5 + 0.5 * (i + 1) / len(video_path), desc=f"批次进度 {i+1}/{len(video_path)}...")
 
                     status_msg = f"视频 {i+1}: {results.get('status', 'unknown')} ({results.get('processing_time', 0)}秒)"
                     output_video = results.get("output_video")
@@ -913,27 +914,22 @@ def create_demo():
             outputs=None
         )
 
+        # 键盘快捷键 Ctrl+Enter 触发处理
+        demo.load(
+            fn=lambda: None,
+            inputs=None,
+            outputs=None,
+            _js="""() => {
+                document.addEventListener('keydown', function(e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                        e.preventDefault();
+                        document.querySelector('button[data-testid="button-🚀-开始处理"]')?.click();
+                    }
+                });
+            }"""
+        )
+
     return demo
-
-    # 键盘快捷键 Ctrl+Enter 触发处理
-    def handle_keydown(e):
-        if e.key == "Enter" and (e.ctrl_key or e.meta_key):
-            if process_btn.interactive:
-                process_btn.click()
-
-    demo.load(
-        fn=lambda: None,
-        inputs=None,
-        outputs=None,
-        _js="""() => {
-            document.addEventListener('keydown', function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    e.preventDefault();
-                    document.querySelector('button[data-testid="button-🚀-开始处理"]')?.click();
-                }
-            });
-        }"""
-    )
 
 if __name__ == "__main__":
     demo = create_demo()
