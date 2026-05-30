@@ -232,7 +232,8 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             results["status"] = "error"
             results["errors"].append(f"视频过长 ({int(duration_sec//60)}分钟)，请上传 60 分钟以内的视频")
             return results
-    except Exception:
+    except Exception as e:
+        print(f"[ffprobe 时长校验失败: {e}]")
         pass  # 时长获取失败不影响主流程
 
     start_time = datetime.now()
@@ -881,7 +882,8 @@ def create_demo():
                     size_mb = size_bytes / (1024 * 1024)
                     bitrate_kbps = int(bitrate) // 1000 if bitrate.isdigit() else "?"
                     metadata = f"📐 {width}×{height} | 📊 {bitrate_kbps} kb/s | 💾 {size_mb:.1f} MB | ⏱️ {int(duration_sec)} 秒"
-                except Exception:
+                except Exception as e:
+                    print(f"[ffprobe 元数据获取失败: {e}]")
                     estimate = "无法预估"
                     metadata = ""
             return video_path, estimate, metadata
