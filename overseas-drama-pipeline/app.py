@@ -52,17 +52,29 @@ def get_whisper_model(model_size: str = "base", progress=None):
 # ============== 配置文件管理 ==============
 
 def load_config() -> dict:
-    """加载配置"""
+    """加载配置，优先使用环境变量中的 Key"""
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as f:
-            return json.load(f)
-    return {
-        "openai_api_key": "",
-        "elevenlabs_api_key": "",
-        "elevenlabs_voice_id": "",
-        "translation_model": "gpt-4o",
-        "tts_provider": "gtts"  # gtts / elevenlabs
-    }
+            config = json.load(f)
+    else:
+        config = {}
+
+    # 环境变量覆盖配置文件（生产环境推荐）
+    if os.environ.get("OPENAI_API_KEY"):
+        config["openai_api_key"] = os.environ.get("OPENAI_API_KEY")
+    if os.environ.get("ELEVENLABS_API_KEY"):
+        config["elevenlabs_api_key"] = os.environ.get("ELEVENLABS_API_KEY")
+    if os.environ.get("ELEVENLABS_VOICE_ID"):
+        config["elevenlabs_voice_id"] = os.environ.get("ELEVENLABS_VOICE_ID")
+
+    # 确保默认字段存在
+    config.setdefault("openai_api_key", "")
+    config.setdefault("elevenlabs_api_key", "")
+    config.setdefault("elevenlabs_voice_id", "")
+    config.setdefault("translation_model", "gpt-4o")
+    config.setdefault("tts_provider", "gtts")
+
+    return config
 
 def save_config(config: dict):
     """保存配置"""
