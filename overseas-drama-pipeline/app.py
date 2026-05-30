@@ -961,11 +961,11 @@ def create_demo():
 
         # 清空上传
         def clear_upload():
-            return None, None, "", "", "", 0, False, ""
+            return None, None, "", "", "", 0, False, "", "ffmpeg"
 
         clear_btn.click(
             fn=clear_upload,
-            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress, batch_toggle, source_name_output]
+            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress, batch_toggle, source_name_output, video_compose_input]
         )
 
         # 按钮防重复：处理中禁用
