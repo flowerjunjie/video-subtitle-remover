@@ -609,19 +609,6 @@ def create_demo():
                     interactive=False
                 )
 
-                def list_output_files():
-                    files = []
-                    total_size_mb = 0
-                    if os.path.exists(OUTPUT_DIR):
-                        for f in os.listdir(OUTPUT_DIR):
-                            fp = os.path.join(OUTPUT_DIR, f)
-                            if os.path.isfile(fp):
-                                files.append(fp)
-                                total_size_mb += os.path.getsize(fp) / (1024 * 1024)
-                    file_count = len(files)
-                    size_str = f"{total_size_mb:.1f} MB，共 {file_count} 个文件"
-                    return files, size_str
-
                 def cleanup_old_files():
                     cleaned = 0
                     if os.path.exists(OUTPUT_DIR):
