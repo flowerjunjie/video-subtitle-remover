@@ -420,7 +420,6 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
 
             if video_compose_mode == "wav2lip":
                 # Wav2Lip 口型同步（需要 GPU + Wav2Lip 模型）
-                cmd = f'python -c "from Wav2Lip import inference; Wav2Lip.inference(\'{video_path}\', \'{tts_path}\', \'{output_video_path}\')"'
                 raise Exception("Wav2Lip 模式需要 GPU 服务器，当前为 CPU 模式，请切换为 ffmpeg")
             elif video_compose_mode == "deeplivecam":
                 # Deep-Live-Cam 换脸 + 口型同步（需要 GPU + Deep-Live-Cam）
