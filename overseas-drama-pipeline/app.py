@@ -104,7 +104,7 @@ def transcribe_audio(audio_path: str, model_size: str = "base", progress=None) -
 def translate_to_english_openai(text: str, api_key: str) -> str:
     """使用 OpenAI GPT 翻译"""
     if not api_key:
-        return f"[Translated] {text}"
+        raise ValueError("OpenAI API Key 未配置")
 
     try:
         from openai import OpenAI
@@ -134,13 +134,13 @@ Rules:
     except Exception as e:
         error_msg = str(e)
         if "Incorrect API key" in error_msg or "invalid_api_key" in error_msg:
-            return f"[Error: API Key 无效，请检查 OpenAI API Key 配置]"
+            raise ValueError(f"OpenAI API Key 无效: {error_msg}")
         elif "Rate limit" in error_msg or "429" in error_msg:
-            return f"[Error: OpenAI 请求频率超限，请稍后再试]"
+            raise RuntimeError(f"OpenAI 请求频率超限: {error_msg}")
         elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
-            return f"[Error: OpenAI API 连接失败，请检查网络]"
+            raise ConnectionError(f"OpenAI API 连接失败: {error_msg}")
         else:
-            return f"[Translated] {text}"
+            raise RuntimeError(f"翻译失败: {error_msg}")
 
 def format_srt_time(seconds: float) -> str:
     """将秒数转换为 SRT 时间格式 HH:MM:SS,mmm"""
