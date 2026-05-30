@@ -197,12 +197,13 @@ def generate_tts_elevenlabs(text: str, api_key: str, voice_id: str, output_path:
             print(f"[ElevenLabs 连接失败，切换到 gTTS]")
         return generate_tts_gtts(text, output_path)
 
-def process_video(video_path: str, target_face: str = None, config: dict = None, progress=gr.Progress(), model_size: str = "base") -> dict:
+def process_video(video_path: str, target_face: str = None, config: dict = None, progress=gr.Progress(), model_size: str = "base", video_compose_mode: str = "ffmpeg") -> dict:
     """
-    视频处理主管道（CPU版本）
-    实际部署时替换为 Deep-Live-Cam + Wav2Lip
-
-    使用 gr.Progress 实现实时进度展示，每步骤独立错误处理
+    视频处理主管道
+    video_compose_mode 选项：
+    - ffmpeg：CPU 音频替换（无口型同步，快速）
+    - wav2lip：GPU 口型同步（需要 CUDA + Wav2Lip）
+    - deeplivecam：GPU 换脸 + 口型同步（需要 CUDA + Deep-Live-Cam）
     """
     if config is None:
         config = load_config()
@@ -416,11 +417,20 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         output_video_path = ""
         try:
             output_video_path = os.path.join(OUTPUT_DIR, f"{session_prefix}_final.mp4")
-            # 简单合并：视频轨道复制 + 音频替换为 TTS（无口型同步，GPU版本后续集成 Wav2Lip）
-            cmd = f'ffmpeg -y -i "{video_path}" -i "{tts_path}" -c:v copy -c:a aac -shortest "{output_video_path}"'
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            if result.returncode != 0:
-                raise Exception(f"ffmpeg 视频合成失败: {result.stderr or '未知错误'}")
+
+            if video_compose_mode == "wav2lip":
+                # Wav2Lip 口型同步（需要 GPU + Wav2Lip 模型）
+                cmd = f'python -c "from Wav2Lip import inference; Wav2Lip.inference(\'{video_path}\', \'{tts_path}\', \'{output_video_path}\')"'
+                raise Exception("Wav2Lip 模式需要 GPU 服务器，当前为 CPU 模式，请切换为 ffmpeg")
+            elif video_compose_mode == "deeplivecam":
+                # Deep-Live-Cam 换脸 + 口型同步（需要 GPU + Deep-Live-Cam）
+                raise Exception("Deep-Live-Cam 模式需要 GPU 服务器，当前为 CPU 模式，请切换为 ffmpeg")
+            else:
+                # 默认 FFmpeg：视频轨道复制 + 音频替换为 TTS
+                cmd = f'ffmpeg -y -i "{video_path}" -i "{tts_path}" -c:v copy -c:a aac -shortest "{output_video_path}"'
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                if result.returncode != 0:
+                    raise Exception(f"ffmpeg 视频合成失败: {result.stderr or '未知错误'}")
             results["steps"].append({
                 "step": "video_compose",
                 "status": "done",
@@ -523,6 +533,17 @@ def create_demo():
                             choices=["tiny", "base", "small", "medium", "large"],
                             value="base",
                             info="tiny最快精度低，large最慢精度高；16G内存建议 base 或 small"
+                        )
+
+                        video_compose_input = gr.Dropdown(
+                            label="视频合成模式",
+                            choices=[
+                                ("ffmpeg（音频替换，无口型同步）", "ffmpeg"),
+                                ("wav2lip（GPU 口型同步）", "wav2lip"),
+                                ("deeplivecam（GPU 换脸+口型同步）", "deeplivecam"),
+                            ],
+                            value="ffmpeg",
+                            info="GPU 服务器可选 wav2lip/deeplivecam；CPU 服务器用 ffmpeg"
                         )
 
                         estimate_output = gr.Textbox(
@@ -801,7 +822,7 @@ def create_demo():
         """)
 
         # 事件绑定 - 使用 config 参数
-        def process_with_config(video_path, target_face, model_size, batch_mode=False):
+        def process_with_config(video_path, target_face, model_size, video_compose_mode, batch_mode=False):
             cfg = load_config()
 
             # 批量模式
@@ -817,7 +838,7 @@ def create_demo():
                         break
                     all_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] 开始处理第 {i+1}/{len(video_path)} 个视频")
 
-                    results = process_video(vp, target_face, cfg, model_size=model_size, progress=progress)
+                    results = process_video(vp, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode)
                     progress(0.5 + 0.5 * (i + 1) / len(video_path), desc=f"批次进度 {i+1}/{len(video_path)}...")
 
                     status_msg = f"视频 {i+1}: {results.get('status', 'unknown')} ({results.get('processing_time', 0)}秒)"
@@ -841,7 +862,7 @@ def create_demo():
                 return combined_status, first_video, None, combined_errors, combined_logs, 100, source_name
 
             # 单文件模式
-            results = process_video(video_path, target_face, cfg, progress=progress, model_size=model_size)
+            results = process_video(video_path, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode)
 
             # 状态信息
             status_msg = f"处理状态: {results.get('status', 'unknown')}\n"
@@ -967,7 +988,7 @@ def create_demo():
             outputs=[process_btn, cancel_btn]
         ).then(
             fn=process_with_config,
-            inputs=[video_input, target_face_input, model_size_input, batch_toggle],
+            inputs=[video_input, target_face_input, model_size_input, video_compose_input, batch_toggle],
             outputs=[status_output, result_video, subtitle_download, error_output, log_output, overall_progress, source_name_output]
         ).then(
             fn=enable_processing,
