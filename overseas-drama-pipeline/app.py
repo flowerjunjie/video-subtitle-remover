@@ -538,6 +538,13 @@ def create_demo():
                             interactive=False
                         )
 
+                        # 原文件名展示（方便对照）
+                        source_name_output = gr.Textbox(
+                            label="源文件",
+                            interactive=False,
+                            lines=1
+                        )
+
                         # 整体进度百分比
                         overall_progress = gr.Number(
                             label="整体进度",
@@ -775,8 +782,10 @@ def create_demo():
 
                 # 第一个输出视频作为预览
                 first_video = all_outputs[0] if all_outputs else None
+                # 批量模式显示"批量模式"
+                source_name = f"批量模式 ({len(video_path)} 个文件)"
 
-                return combined_status, first_video, None, combined_errors, combined_logs, 100
+                return combined_status, first_video, None, combined_errors, combined_logs, 100, source_name
 
             # 单文件模式
             results = process_video(video_path, target_face, cfg, model_size=model_size)
@@ -814,7 +823,10 @@ def create_demo():
             log_msg = "\n".join(log_lines)
             overall_pct = int(done_count / total_count * 100) if total_count > 0 else 0
 
-            return status_msg, output_video, subtitle_file if subtitle_file else None, errors, log_msg, overall_pct
+            # 源文件名
+            source_name = os.path.basename(video_path) if video_path else ""
+
+            return status_msg, output_video, subtitle_file if subtitle_file else None, errors, log_msg, overall_pct, source_name
 
         # 上传后自动预览视频 + 预估时间 + 元数据
         def update_preview_and_estimate(video_path, model_size):
@@ -875,11 +887,11 @@ def create_demo():
 
         # 清空上传
         def clear_upload():
-            return None, None, "", "", "", 0, False
+            return None, None, "", "", "", 0, False, ""
 
         clear_btn.click(
             fn=clear_upload,
-            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress, batch_toggle]
+            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress, batch_toggle, source_name_output]
         )
 
         # 按钮防重复：处理中禁用
@@ -902,7 +914,7 @@ def create_demo():
         ).then(
             fn=process_with_config,
             inputs=[video_input, target_face_input, model_size_input, batch_toggle],
-            outputs=[status_output, result_video, subtitle_download, error_output, log_output, overall_progress]
+            outputs=[status_output, result_video, subtitle_download, error_output, log_output, overall_progress, source_name_output]
         ).then(
             fn=enable_processing,
             outputs=[process_btn, cancel_btn]
