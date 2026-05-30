@@ -599,6 +599,11 @@ def create_demo():
 
                 以下是 outputs 目录中的生成文件，支持直接下载。
                 """)
+                output_files_stats = gr.Textbox(
+                    label="磁盘占用",
+                    interactive=False,
+                    lines=1
+                )
                 output_files_list = gr.File(
                     label="可下载文件",
                     interactive=False
@@ -613,7 +618,9 @@ def create_demo():
                             if os.path.isfile(fp):
                                 files.append(fp)
                                 total_size_mb += os.path.getsize(fp) / (1024 * 1024)
-                    return files
+                    file_count = len(files)
+                    size_str = f"{total_size_mb:.1f} MB，共 {file_count} 个文件"
+                    return files, size_str
 
                 def cleanup_old_files():
                     cleaned = 0
@@ -625,7 +632,18 @@ def create_demo():
                             if os.path.isfile(fp) and os.path.getmtime(fp) < cutoff:
                                 os.remove(fp)
                                 cleaned += 1
-                    return f"已清理 {cleaned} 个文件"
+                    # 返回清理结果和更新后的文件列表
+                    files = []
+                    total_size_mb = 0
+                    if os.path.exists(OUTPUT_DIR):
+                        for f in os.listdir(OUTPUT_DIR):
+                            fp = os.path.join(OUTPUT_DIR, f)
+                            if os.path.isfile(fp):
+                                files.append(fp)
+                                total_size_mb += os.path.getsize(fp) / (1024 * 1024)
+                    file_count = len(files)
+                    size_str = f"{total_size_mb:.1f} MB，共 {file_count} 个文件"
+                    return files, size_str, f"已清理 {cleaned} 个文件"
 
                 def list_output_files_with_size():
                     files = []
@@ -636,16 +654,23 @@ def create_demo():
                             if os.path.isfile(fp):
                                 files.append(fp)
                                 total_size_mb += os.path.getsize(fp) / (1024 * 1024)
-                    return files
+                    file_count = len(files)
+                    size_str = f"{total_size_mb:.1f} MB，共 {file_count} 个文件"
+                    return files, size_str
 
-                output_files_list.value = list_output_files_with_size()
+                initial_files, initial_size = list_output_files_with_size()
+                output_files_list.value = initial_files
+                output_files_stats.value = initial_size
 
                 refresh_btn = gr.Button("🔄 刷新列表")
-                refresh_btn.click(fn=list_output_files_with_size, outputs=[output_files_list])
+                refresh_btn.click(
+                    fn=list_output_files_with_size,
+                    outputs=[output_files_list, output_files_stats]
+                )
 
                 cleanup_btn = gr.Button("🗑️ 清理7天前文件")
                 cleanup_output = gr.Textbox(label="清理结果", interactive=False, lines=1)
-                cleanup_btn.click(fn=cleanup_old_files, outputs=[cleanup_output])
+                cleanup_btn.click(fn=cleanup_old_files, outputs=[output_files_list, output_files_stats, cleanup_output])
 
             with gr.Tab("⚙️ API 配置"):
                 gr.Markdown("""
