@@ -1005,7 +1005,7 @@ def create_demo():
             fn=lambda: None,
             inputs=None,
             outputs=None,
-            _js="""() => {
+            js="""() => {
                 document.addEventListener('keydown', function(e) {
                     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                         e.preventDefault();
