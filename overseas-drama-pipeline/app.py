@@ -410,14 +410,17 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             results["errors"].append(f"字幕生成: {str(e)}")
             subtitle_path = ""
 
-        # Step 6: 视频合成 (模拟)
+        # Step 6: 视频合成
         progress(0.8, desc="合成视频中...")
         step6_start = datetime.now()
         output_video_path = ""
         try:
-            # TODO: 实际视频合成需要调用 ffmpeg 或其他工具
-            # 目前输出音频文件路径作为模拟结果
-            output_video_path = tts_path if tts_path else audio_path
+            output_video_path = os.path.join(OUTPUT_DIR, f"{session_prefix}_final.mp4")
+            # 简单合并：视频轨道复制 + 音频替换为 TTS（无口型同步，GPU版本后续集成 Wav2Lip）
+            cmd = f'ffmpeg -y -i "{video_path}" -i "{tts_path}" -c:v copy -c:a aac -shortest "{output_video_path}"'
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            if result.returncode != 0:
+                raise Exception(f"ffmpeg 视频合成失败: {result.stderr or '未知错误'}")
             results["steps"].append({
                 "step": "video_compose",
                 "status": "done",
