@@ -385,8 +385,14 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             if transcript_segments and english_lines:
                 srt_content = generate_srt_from_segments(transcript_segments, english_lines)
             else:
-                # Fallback: 单段字幕
-                srt_content = f"1\n00:00:00,000 --> 00:00:05,000\n{english_text}\n"
+                # Fallback: 单段字幕，使用音频实际时长
+                try:
+                    cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 "{audio_path}"'
+                    dur = float(subprocess.check_output(cmd, shell=True, text=True).strip())
+                    end_time = format_srt_time(dur)
+                except Exception:
+                    end_time = "00:00:10,000"
+                srt_content = f"1\n00:00:00,000 --> {end_time}\n{english_text}\n"
             with open(subtitle_path, 'w', encoding='utf-8') as f:
                 f.write(srt_content)
             results["steps"].append({
