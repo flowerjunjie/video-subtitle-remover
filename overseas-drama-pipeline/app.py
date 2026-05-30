@@ -851,7 +851,7 @@ def create_demo():
                 return combined_status, first_video, None, combined_errors, combined_logs, 100, source_name
 
             # 单文件模式
-            results = process_video(video_path, target_face, cfg, model_size=model_size)
+            results = process_video(video_path, target_face, cfg, progress=progress, model_size=model_size)
 
             # 状态信息
             status_msg = f"处理状态: {results.get('status', 'unknown')}\n"
