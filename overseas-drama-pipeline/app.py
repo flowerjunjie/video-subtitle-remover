@@ -4,8 +4,9 @@ Gradio UI - 支持视频上传 + 换脸 + 口型同步 + 配音 + 字幕翻译
 """
 
 import os
+import re
+import shlex
 import subprocess
-import tempfile
 import shutil
 import json
 import threading
@@ -53,33 +54,42 @@ def get_whisper_model(model_size: str = "base", progress=None):
 
 def load_config() -> dict:
     """加载配置，优先使用环境变量中的 Key"""
+    config = {}
     if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r') as f:
-            config = json.load(f)
-    else:
-        config = {}
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            config = {}
 
     # 环境变量覆盖配置文件（生产环境推荐）
     if os.environ.get("OPENAI_API_KEY"):
         config["openai_api_key"] = os.environ.get("OPENAI_API_KEY")
+    if os.environ.get("DEEPSEEK_API_KEY"):
+        config["deepseek_api_key"] = os.environ.get("DEEPSEEK_API_KEY")
     if os.environ.get("ELEVENLABS_API_KEY"):
         config["elevenlabs_api_key"] = os.environ.get("ELEVENLABS_API_KEY")
     if os.environ.get("ELEVENLABS_VOICE_ID"):
         config["elevenlabs_voice_id"] = os.environ.get("ELEVENLABS_VOICE_ID")
 
-    # 确保默认字段存在
-    config.setdefault("openai_api_key", "")
-    config.setdefault("elevenlabs_api_key", "")
-    config.setdefault("elevenlabs_voice_id", "")
-    config.setdefault("translation_model", "gpt-4o")
-    config.setdefault("tts_provider", "gtts")
+    # 确保默认字段存在（用 or "" 处理 explicit null 值）
+    config["openai_api_key"] = config.get("openai_api_key") or ""
+    config["deepseek_api_key"] = config.get("deepseek_api_key") or ""
+    config["elevenlabs_api_key"] = config.get("elevenlabs_api_key") or ""
+    config["elevenlabs_voice_id"] = config.get("elevenlabs_voice_id") or ""
+    config["translation_model"] = config.get("translation_model") or "gpt-4o"
+    config["tts_provider"] = config.get("tts_provider") or "gtts"
 
     return config
 
 def save_config(config: dict):
     """保存配置"""
-    with open(CONFIG_FILE, 'w') as f:
-        json.dump(config, f, indent=2)
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f, indent=2)
+        os.chmod(CONFIG_FILE, 0o600)  # 限制配置文件权限，防止 API Key 泄露
+    except IOError as e:
+        raise Exception(f"配置保存失败: {e}")
 
 # ============== 工具函数 ==============
 
@@ -87,7 +97,7 @@ def extract_audio(video_path: str, audio_path: str = None) -> str:
     """从视频提取音频"""
     if audio_path is None:
         audio_path = video_path.replace(".mp4", "_audio.wav").replace(".mov", "_audio.wav")
-    cmd = f'ffmpeg -y -i "{video_path}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "{audio_path}"'
+    cmd = f'ffmpeg -y -i {shlex.quote(video_path)} -vn -acodec pcm_s16le -ar 16000 -ac 1 {shlex.quote(audio_path)}'
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
         raise Exception(f"ffmpeg 音频提取失败: {result.stderr or '未知错误'}")
@@ -105,6 +115,8 @@ def translate_to_english_openai(text: str, api_key: str) -> str:
     """使用 OpenAI GPT 翻译"""
     if not api_key:
         raise ValueError("OpenAI API Key 未配置")
+    if not text or not text.strip():
+        raise ValueError("翻译文本为空")
 
     try:
         from openai import OpenAI
@@ -142,6 +154,49 @@ Rules:
         else:
             raise RuntimeError(f"翻译失败: {error_msg}")
 
+def translate_to_english_deepseek(text: str, api_key: str, model: str = "deepseek-chat") -> str:
+    """使用 DeepSeek 翻译"""
+    if not api_key:
+        raise ValueError("DeepSeek API Key 未配置")
+    if not text or not text.strip():
+        raise ValueError("翻译文本为空")
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are a professional subtitle translator. Translate Chinese subtitles to English.
+Rules:
+- Keep it natural and conversational
+- Use appropriate Western names for characters if they are Chinese
+- Maintain the tone and style of the original
+- Return ONLY the translated text, no explanations"""
+                },
+                {
+                    "role": "user",
+                    "content": f"Translate: {text}"
+                }
+            ],
+            max_tokens=2000,
+            temperature=0.3
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        error_msg = str(e)
+        if "Incorrect API key" in error_msg or "invalid_api_key" in error_msg or "api_key" in error_msg.lower():
+            raise ValueError(f"DeepSeek API Key 无效: {error_msg}")
+        elif "Rate limit" in error_msg or "429" in error_msg:
+            raise RuntimeError(f"DeepSeek 请求频率超限: {error_msg}")
+        elif "connection" in error_msg.lower() or "timeout" in error_msg.lower():
+            raise ConnectionError(f"DeepSeek API 连接失败: {error_msg}")
+        else:
+            raise RuntimeError(f"翻译失败: {error_msg}")
+
 def format_srt_time(seconds: float) -> str:
     """将秒数转换为 SRT 时间格式 HH:MM:SS,mmm"""
     hours = int(seconds // 3600)
@@ -164,6 +219,8 @@ def generate_srt_from_segments(segments: list, english_lines: list) -> str:
 
 def generate_tts_gtts(text: str, output_path: str) -> str:
     """生成 TTS 音频 (gTTS)"""
+    if not text or not text.strip():
+        raise ValueError("TTS text is empty")
     tts = gTTS(text=text, lang='en')
     tts.save(output_path)
     return output_path
@@ -208,6 +265,22 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
     if config is None:
         config = load_config()
 
+    # Gradio 批量模式传入 list，单文件时也可能是 list，取第一个
+    if isinstance(video_path, (list, tuple)):
+        video_path = video_path[0] if video_path else ""
+
+    # 空路径/空白路径防御
+    if not video_path or not video_path.strip():
+        results = {
+            "status": "error",
+            "input_video": "",
+            "output_video": None,
+            "processing_time": 0,
+            "steps": [],
+            "errors": ["未上传视频文件"]
+        }
+        return results
+
     # 文件大小校验（提前初始化 results 以便错误处理）
     results = {
         "status": "processing",
@@ -226,7 +299,7 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
 
     # 视频时长校验（防止超长音频 OOM）
     try:
-        cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 "{video_path}"'
+        cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 {shlex.quote(video_path)}'
         duration_str = subprocess.check_output(cmd, shell=True, text=True).strip()
         duration_sec = float(duration_str)
         if duration_sec > 3600:
@@ -238,8 +311,13 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         pass  # 时长获取失败不影响主流程
 
     start_time = datetime.now()
-    video_basename = os.path.splitext(os.path.basename(video_path))[0]
-    # UUID 保证输出文件不冲突
+    # 安全处理：防止路径遍历攻击
+    raw_basename = os.path.basename(video_path)
+    if raw_basename:
+        video_basename = os.path.splitext(raw_basename)[0]
+        video_basename = re.sub(r'[^a-zA-Z0-9_\-]', '_', video_basename)
+    else:
+        video_basename = "video"
     unique_id = uuid.uuid4().hex[:8]
     session_prefix = f"{video_basename}_{unique_id}"
 
@@ -306,7 +384,24 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         step3_start = datetime.now()
         english_lines = []
         try:
-            api_key = config.get("openai_api_key", "")
+            openai_key = config.get("openai_api_key", "")
+            deepseek_key = config.get("deepseek_api_key", "")
+            translation_model = config.get("translation_model", "gpt-4o")
+
+            # 优先使用 DeepSeek（如果配置了）
+            if deepseek_key and translation_model.startswith("deepseek"):
+                translator = lambda text: translate_to_english_deepseek(text, deepseek_key, translation_model)
+                api_key = deepseek_key
+            elif openai_key:
+                translator = lambda text: translate_to_english_openai(text, openai_key)
+                api_key = openai_key
+            else:
+                api_key = None
+
+            # 模型-key 不匹配校验
+            if translation_model.startswith("deepseek") and not deepseek_key:
+                raise ValueError("DeepSeek 模型已选择但未配置 DeepSeek API Key，请在设置中配置")
+
             if api_key and transcript_segments:
                 # 分段翻译，每段单独翻，对齐时间戳
                 all_en = []
@@ -316,7 +411,9 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                         raise Exception("用户取消")
                     seg_text = seg.get("text", "").strip()
                     if seg_text:
-                        en = translate_to_english_openai(seg_text, api_key)
+                        en = translator(seg_text)
+                        if not en or not en.strip():
+                            raise RuntimeError(f"翻译返回空结果: segment={seg_text[:50]}")
                         all_en.append(en)
                     else:
                         all_en.append("")
@@ -325,10 +422,10 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                 english_lines = all_en
                 english_text = " ".join(english_lines)
             elif api_key:
-                english_text = translate_to_english_openai(original_text, api_key)
+                english_text = translator(original_text)
                 english_lines = [english_text]
             else:
-                english_text = f"[Please configure OpenAI API Key to enable real translation] {original_text[:100]}..."
+                english_text = f"[Please configure OpenAI or DeepSeek API Key to enable real translation] {original_text[:100]}..."
                 english_lines = [english_text]
 
             results["steps"].append({
@@ -347,35 +444,47 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
             english_text = f"[Translation failed] {original_text[:100]}..."
             english_lines = [english_text]
 
-        # Step 4: TTS 生成
+        # Step 4: TTS 生成（翻译失败时跳过）
         progress(0.6, desc="生成配音中...")
         step4_start = datetime.now()
         tts_path = ""
-        try:
-            tts_provider = config.get("tts_provider", "gtts")
-            tts_path = os.path.join(OUTPUT_DIR, f"{session_prefix}_en.wav")
-
-            if tts_provider == "elevenlabs":
-                elevenlabs_key = config.get("elevenlabs_api_key", "")
-                elevenlabs_voice = config.get("elevenlabs_voice_id", "")
-                tts_path = generate_tts_elevenlabs(english_text, elevenlabs_key, elevenlabs_voice, tts_path)
-            else:
-                tts_path = generate_tts_gtts(english_text, tts_path)
-
-            results["steps"].append({
-                "step": "tts",
-                "status": "done",
-                "output": tts_path,
-                "time": (datetime.now() - step4_start).seconds
-            })
-        except Exception as e:
+        translate_failed = any(s.get("step") == "translate" and s.get("status") == "error" for s in results.get("steps", []))
+        if translate_failed:
             results["steps"].append({
                 "step": "tts",
                 "status": "error",
-                "error": f"TTS生成失败: {str(e)}"
+                "error": "翻译失败，跳过 TTS 生成"
             })
-            results["errors"].append(f"TTS生成: {str(e)}")
-            tts_path = ""
+            results["errors"].append("TTS: 跳过（翻译失败）")
+        else:
+            try:
+                tts_provider = config.get("tts_provider", "gtts")
+                tts_path = os.path.join(OUTPUT_DIR, f"{session_prefix}_en.wav")
+
+                if tts_provider == "elevenlabs":
+                    elevenlabs_key = config.get("elevenlabs_api_key", "")
+                    elevenlabs_voice = config.get("elevenlabs_voice_id", "")
+                    tts_path = generate_tts_elevenlabs(english_text, elevenlabs_key, elevenlabs_voice, tts_path)
+                else:
+                    tts_path = generate_tts_gtts(english_text, tts_path)
+
+                if not os.path.isfile(tts_path) or os.path.getsize(tts_path) == 0:
+                    raise Exception("TTS 音频生成失败（文件为空）")
+
+                results["steps"].append({
+                    "step": "tts",
+                    "status": "done",
+                    "output": tts_path,
+                    "time": (datetime.now() - step4_start).seconds
+                })
+            except Exception as e:
+                results["steps"].append({
+                    "step": "tts",
+                    "status": "error",
+                    "error": f"TTS生成失败: {str(e)}"
+                })
+                results["errors"].append(f"TTS生成: {str(e)}")
+                tts_path = ""
 
         # Step 5: 字幕文件生成
         progress(0.7, desc="生成字幕文件中...")
@@ -383,14 +492,18 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         subtitle_path = ""
         try:
             subtitle_path = os.path.join(OUTPUT_DIR, f"{session_prefix}_en.srt")
-            if transcript_segments and english_lines:
+            if transcript_segments and english_lines and english_lines[0]:
+                # 有 Whisper 时间戳时生成带时间轴的 SRT
                 srt_content = generate_srt_from_segments(transcript_segments, english_lines)
             else:
                 # Fallback: 单段字幕，使用音频实际时长
                 try:
-                    cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 "{audio_path}"'
-                    dur = float(subprocess.check_output(cmd, shell=True, text=True).strip())
-                    end_time = format_srt_time(dur)
+                    if audio_path and os.path.isfile(audio_path):
+                        cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 {shlex.quote(audio_path)}'
+                        dur = float(subprocess.check_output(cmd, shell=True, text=subprocess.DEVNULL).strip())
+                        end_time = format_srt_time(dur)
+                    else:
+                        end_time = "00:00:10,000"
                 except Exception:
                     end_time = "00:00:10,000"
                 srt_content = f"1\n00:00:00,000 --> {end_time}\n{english_text}\n"
@@ -426,16 +539,32 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                 raise Exception("Deep-Live-Cam 模式需要 GPU 服务器，当前为 CPU 模式，请切换为 ffmpeg")
             else:
                 # 默认 FFmpeg：视频轨道复制 + 音频替换为 TTS
-                cmd = f'ffmpeg -y -i "{video_path}" -i "{tts_path}" -c:v copy -c:a aac -shortest "{output_video_path}"'
-                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-                if result.returncode != 0:
-                    raise Exception(f"ffmpeg 视频合成失败: {result.stderr or '未知错误'}")
-            results["steps"].append({
-                "step": "video_compose",
-                "status": "done",
-                "output": output_video_path,
-                "time": (datetime.now() - step6_start).seconds
-            })
+                if translate_failed:
+                    # 翻译失败时跳过视频合成（无法生成配音）
+                    results["steps"].append({
+                        "step": "video_compose",
+                        "status": "error",
+                        "error": "翻译失败，跳过视频合成"
+                    })
+                    results["errors"].append("视频合成: 跳过（翻译失败）")
+                    output_video_path = ""
+                elif not tts_path or not os.path.isfile(tts_path):
+                    raise Exception(f"TTS 音频生成失败，无法进行视频合成")
+                else:
+                    cmd = f'ffmpeg -y -i {shlex.quote(video_path)} -i {shlex.quote(tts_path)} -c:v copy -c:a aac -shortest {shlex.quote(output_video_path)}'
+                    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                    if result.returncode != 0:
+                        raise Exception(f"ffmpeg 视频合成失败: {result.stderr or '未知错误'}")
+
+            # 只有成功合成或跳过时才追加 done 步骤
+            if output_video_path:
+                results["steps"].append({
+                    "step": "video_compose",
+                    "status": "done",
+                    "output": output_video_path,
+                    "time": (datetime.now() - step6_start).seconds
+                })
+
         except Exception as e:
             results["steps"].append({
                 "step": "video_compose",
@@ -464,6 +593,7 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                 os.remove(audio_path)
             except Exception:
                 pass
+        _cancel_event.clear()  # 重置取消事件
 
     return results
 
@@ -492,7 +622,7 @@ def create_demo():
         - 🔊 英文配音（TTS）
         - 📝 字幕翻译
 
-        ⚠️ 当前为 CPU 版本，处理速度较慢，请耐心等待
+        🔊 支持 GPU 加速，处理速度更快
         """)
 
         with gr.Tabs():
@@ -705,6 +835,28 @@ def create_demo():
                         info="用于 GPT-4o 翻译中文字幕"
                     )
 
+                    # DeepSeek 配置
+                    gr.Markdown("""
+                    ### DeepSeek (翻译)
+
+                    [获取 API Key →](https://platform.deepseek.com/api-keys)
+                    """)
+
+                    deepseek_api_key = gr.Textbox(
+                        label="DeepSeek API Key",
+                        value=default_config.get("deepseek_api_key", ""),
+                        type="password",
+                        placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx",
+                        info="DeepSeek API (支持 deepseek-chat 等模型，性价比更高)"
+                    )
+
+                    translation_model = gr.Radio(
+                        label="翻译模型",
+                        choices=["gpt-4o", "deepseek-chat"],
+                        value=default_config.get("translation_model", "gpt-4o"),
+                        info="选择翻译使用的模型"
+                    )
+
                     # ElevenLabs 配置
                     gr.Markdown("""
                     ### ElevenLabs (配音)
@@ -756,12 +908,38 @@ def create_demo():
                             else:
                                 return f"⚠️ OpenAI Key 验证异常: {err[:50]}"
 
-                    def save_settings(openai_key, elevenlabs_key, elevenlabs_voice, tts_choice):
-                        """保存配置，ElevenLabs Key 在选择该 provider 时验证"""
-                        # 先验证 OpenAI
-                        openai_validation = validate_api_key(openai_key)
-                        if "❌" in openai_validation:
-                            return openai_validation
+                    def validate_deepseek_key(deepseek_key):
+                        """验证 DeepSeek API Key"""
+                        if not deepseek_key.strip():
+                            return None  # DeepSeek is optional
+                        try:
+                            from openai import OpenAI
+                            client = OpenAI(api_key=deepseek_key.strip(), base_url="https://api.deepseek.com")
+                            client.models.list()
+                            return "✅ DeepSeek API Key 验证通过"
+                        except Exception as e:
+                            err = str(e)
+                            if "incorrect" in err.lower() or "invalid" in err.lower() or "api_key" in err.lower():
+                                return f"❌ DeepSeek API Key 无效: {err[:50]}"
+                            else:
+                                return f"⚠️ DeepSeek Key 验证异常: {err[:50]}"
+
+                    def save_settings(openai_key, deepseek_key, elevenlabs_key, elevenlabs_voice, tts_choice, translation_model):
+                        """保存配置，DeepSeek 和 ElevenLabs Key 在选择对应 provider 时验证"""
+                        # 先验证 OpenAI (如果配置了)
+                        if openai_key.strip():
+                            openai_validation = validate_api_key(openai_key)
+                            if "❌" in openai_validation:
+                                return openai_validation
+                        else:
+                            openai_validation = None
+
+                        # DeepSeek 仅在配置时验证
+                        deepseek_validation = None
+                        if deepseek_key.strip():
+                            deepseek_validation = validate_deepseek_key(deepseek_key)
+                            if "❌" in deepseek_validation:
+                                return deepseek_validation
 
                         # ElevenLabs 仅在选择时验证
                         if tts_choice == "elevenlabs" and elevenlabs_key.strip():
@@ -779,19 +957,31 @@ def create_demo():
                                 else:
                                     return f"⚠️ ElevenLabs 验证异常: {err[:50]}"
 
+                        # 模型-key 匹配校验
+                        if translation_model.startswith("deepseek") and not deepseek_key.strip():
+                            return f"❌ DeepSeek 模型已选择但未配置 DeepSeek API Key"
+                        if translation_model == "gpt-4o" and not openai_key.strip():
+                            return f"❌ GPT-4o 模型已选择但未配置 OpenAI API Key"
+
                         cfg = {
                             "openai_api_key": openai_key.strip(),
+                            "deepseek_api_key": deepseek_key.strip(),
                             "elevenlabs_api_key": elevenlabs_key.strip(),
                             "elevenlabs_voice_id": elevenlabs_voice.strip(),
                             "tts_provider": tts_choice,
-                            "translation_model": "gpt-4o"
+                            "translation_model": translation_model
                         }
                         save_config(cfg)
-                        return f"{openai_validation} | 配置已保存"
+                        msg = "配置已保存"
+                        if openai_validation:
+                            msg = f"{openai_validation} | {msg}"
+                        if deepseek_validation:
+                            msg = f"{deepseek_validation} | {msg}"
+                        return msg
 
                     save_config_btn.click(
                         fn=save_settings,
-                        inputs=[openai_api_key, elevenlabs_api_key, elevenlabs_voice_id, tts_provider],
+                        inputs=[openai_api_key, deepseek_api_key, elevenlabs_api_key, elevenlabs_voice_id, tts_provider, translation_model],
                         outputs=[config_output]
                     )
 
@@ -821,11 +1011,22 @@ def create_demo():
         """)
 
         # 事件绑定 - 使用 config 参数
-        def process_with_config(video_path, target_face, model_size, video_compose_mode, batch_mode=False):
+        def process_with_config(video_path, target_face, model_size, video_compose_mode, batch_mode=False, progress=gr.Progress()):
             cfg = load_config()
 
-            # 批量模式
-            if batch_mode and isinstance(video_path, (list, tuple)):
+            # 标记原始输入是否为 list（用于批量模式判断）
+            is_list_input = isinstance(video_path, (list, tuple))
+
+            # Gradio 批量模式传入 list，单文件时也可能是 list，统一展平取第一个
+            if is_list_input:
+                video_path = video_path[0] if video_path else ""
+
+            # 空路径防御
+            if not video_path:
+                return "未上传视频", None, None, "未上传视频文件", "无输入", 0, ""
+
+            # 批量模式：batch_mode=True 且原始输入是 list 时启用批量
+            if batch_mode and is_list_input:
                 all_status = []
                 all_outputs = []
                 all_errors = []
@@ -837,11 +1038,19 @@ def create_demo():
                         break
                     all_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] 开始处理第 {i+1}/{len(video_path)} 个视频")
 
-                    results = process_video(vp, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode)
+                    try:
+                        results = process_video(vp, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode)
+                    except Exception as e:
+                        results = {"status": "error", "errors": [str(e)], "output_video": None, "steps": [], "processing_time": 0}
+
                     progress(0.5 + 0.5 * (i + 1) / len(video_path), desc=f"批次进度 {i+1}/{len(video_path)}...")
 
                     status_msg = f"视频 {i+1}: {results.get('status', 'unknown')} ({results.get('processing_time', 0)}秒)"
                     output_video = results.get("output_video")
+                    if isinstance(output_video, list):
+                        output_video = output_video[0] if output_video else None
+                    if output_video and not os.path.isfile(output_video):
+                        output_video = None
                     errors = "\n".join(results.get("errors", [])) if results.get("errors") else "无"
 
                     all_status.append(status_msg)
@@ -879,9 +1088,15 @@ def create_demo():
 
             # 输出视频
             output_video = results.get("output_video")
+            if isinstance(output_video, list):
+                output_video = output_video[0] if output_video else None
+            if output_video and not os.path.isfile(output_video):
+                output_video = None
 
             # 字幕文件
             subtitle_file = results.get("subtitle_file")
+            if subtitle_file and not os.path.isfile(subtitle_file):
+                subtitle_file = None
 
             # 日志
             log_lines = []
@@ -908,14 +1123,11 @@ def create_demo():
 
             # 批量模式下只处理第一个视频
             if isinstance(video_path, (list, tuple)):
-                if video_path:
-                    video_path = video_path[0]
-                else:
-                    return None, "", ""
+                video_path = video_path[0] if video_path else None
 
-            if video_path:
+            if video_path and os.path.isfile(video_path):
                 try:
-                    cmd = f'ffprobe -v quiet -show_entries format=duration,size -of csv=p=0 "{video_path}"'
+                    cmd = f'ffprobe -v quiet -show_entries format=duration,size -of csv=p=0 {shlex.quote(video_path)}'
                     result = subprocess.check_output(cmd, shell=True, text=subprocess.DEVNULL).strip()
                     duration_str, size_str = result.split(',')
                     duration_sec = float(duration_str)
@@ -928,8 +1140,8 @@ def create_demo():
                     else:
                         estimate = f"约 {int(estimated_sec // 60)} 分钟"
                     # 视频元数据
-                    cmd2 = f'ffprobe -v quiet -show_entries stream=width,height,bit_rate -of csv=p=0 "{video_path}"'
-                    info = subprocess.check_output(cmd2, shell=True, text=subprocess.DEVNULL).strip().split('\\n')
+                    cmd2 = f'ffprobe -v quiet -show_entries stream=width,height,bit_rate -of csv=p=0 {shlex.quote(video_path)}'
+                    info = subprocess.check_output(cmd2, shell=True, text=subprocess.DEVNULL).strip().split('\n')
                     width = height = bitrate = ""
                     for line in info:
                         parts = line.split(',')
@@ -965,7 +1177,7 @@ def create_demo():
 
         clear_btn.click(
             fn=clear_upload,
-            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress, batch_toggle, source_name_output, video_compose_input]
+            outputs=[video_input, video_preview, estimate_output, metadata_output, log_output, overall_progress, batch_toggle, source_name_output]
         )
 
         # 按钮防重复：处理中禁用
@@ -1018,9 +1230,10 @@ def create_demo():
     return demo
 
 if __name__ == "__main__":
+    import os
     demo = create_demo()
     demo.launch(
         server_name="0.0.0.0",
-        server_port=7860,
+        server_port=int(os.environ.get("GRADIO_SERVER_PORT", 7860)),
         share=False
     )
