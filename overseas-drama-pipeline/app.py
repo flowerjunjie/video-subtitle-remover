@@ -476,6 +476,9 @@ def run_deep_live_cam(source_face: str, target_video: str, output_path: str) -> 
     if not success:
         raise Exception("DeepLiveCam 视频合成失败")
     move_temp(modules.globals.target_path, output_path)
+    # 防御：验证输出文件存在且非空（move_temp 可能静默失败）
+    if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+        raise RuntimeError(f"DeepLiveCam 输出文件为空或不存在: {output_path}")
 
     print(f"[DeepLiveCam] Done: {output_path}")
     return output_path
@@ -785,6 +788,9 @@ def run_longcat_avatar(
     output_tensor = output_tensor.permute(0, 3, 1, 2)  # (T, H, W, C) -> (T, C, H, W)
     os.makedirs(os.path.dirname(output_path) or OUTPUT_DIR, exist_ok=True)
     save_video_ffmpeg(output_tensor, output_path, audio_path, fps=save_fps, quality=5)
+    # 防御：验证输出文件存在且非空（save_video_ffmpeg 可能静默失败）
+    if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+        raise RuntimeError(f"LongCat-Avatar 输出文件为空或不存在: {output_path}")
 
     if temp_vocal_path != audio_path and os.path.exists(temp_vocal_path):
         try:
