@@ -1339,6 +1339,12 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                     os.remove(tmp_file)
                 except Exception:
                     pass
+        # 清理 process_with_config 自身创建的临时文件
+        if _temp_video_path and os.path.exists(_temp_video_path):
+            try:
+                os.remove(_temp_video_path)
+            except Exception:
+                pass
         _cancel_event.clear()  # 重置取消事件
 
     return results
