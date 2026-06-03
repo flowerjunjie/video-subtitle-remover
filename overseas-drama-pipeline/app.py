@@ -1274,6 +1274,9 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
                         if isinstance(err, bytes):
                             err = err.decode(errors='replace')
                         raise Exception(f"ffmpeg 视频合成失败: {err or '未知错误'}")
+                    # 防御：ffmpeg 成功但文件可能损坏（returncode=0不代表文件完整）
+                    if not os.path.exists(output_video_path) or os.path.getsize(output_video_path) == 0:
+                        raise Exception(f"ffmpeg 合成后文件为空或不存在: {output_video_path}")
 
             # 只有成功合成或跳过时才追加 done 步骤
             if output_video_path:
