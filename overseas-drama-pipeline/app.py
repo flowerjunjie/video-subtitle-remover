@@ -385,9 +385,7 @@ def run_wav2lip(face_video: str, audio: str, output_path: str, target_face: str 
     out.release()
 
     # 检查写入是否成功
-    if os.path.exists(temp_video) and os.path.getsize(temp_video) > 0:
-        pass  # 写入正常
-    else:
+    if not (os.path.exists(temp_video) and os.path.getsize(temp_video) > 0):
         raise RuntimeError(f"Wav2Lip 视频写入失败（文件为空）: {temp_video}")
 
     # 合并音频 - 必须用 TTS 音频 (audio 参数)，不能用 audio_path（那是原视频音频）
@@ -960,9 +958,11 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
         cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 {shlex.quote(video_path)}'
         duration_str = subprocess.check_output(cmd, shell=True, text=True).strip()
         duration_sec = float(duration_str) if duration_str else 0.0
-        if not (0 < duration_sec <= 3600):
+        if duration_sec <= 0:
             results["status"] = "error"
             results["errors"].append(f"视频时长异常 ({duration_sec}秒)，请上传有效视频")
+            return results
+        if duration_sec > 3600:
             results["status"] = "error"
             results["errors"].append(f"视频过长 ({int(duration_sec//60)}分钟)，请上传 60 分钟以内的视频")
             return results

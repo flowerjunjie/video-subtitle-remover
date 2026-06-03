@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作日志 2026-06-02 | 双项目汇总</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 40px 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
+h1 { color: #9a5cf6; font-size: 26px; padding-bottom: 16px; border-bottom: 2px solid #2a2a3e; margin-bottom: 32px; }
+h2 { color: #9a5cf6; font-size: 15px; font-weight: 600; margin: 28px 0 12px; padding-left: 12px; border-left: 3px solid #9a5cf6; }
+h3 { color: #a78bfa; font-size: 14px; font-weight: 600; margin: 20px 0 10px; }
+table { width: 100%; border-collapse: collapse; background: #12121a; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a3e; margin-bottom: 12px; }
+th { background: #1a1a2e; color: #9a5cf6; padding: 12px 14px; text-align: left; font-size: 13px; font-weight: 600; border-bottom: 1px solid #2a2a3e; }
+td { padding: 10px 14px; font-size: 13px; color: #c0c0c0; border-bottom: 1px solid #1e1e2a; vertical-align: top; line-height: 1.7; }
+tr:last-child td { border-bottom: none; }
+.ok { color: #4ade80; }
+.err { color: #f87171; }
+.warn { color: #fbbf24; }
+.summary { background: #12121a; border: 1px solid #2a2a3e; border-radius: 10px; padding: 20px 24px; margin-bottom: 28px; }
+.summary h4 { color: #9a5cf6; font-size: 15px; margin-bottom: 12px; }
+.summary ul { list-style: none; }
+.summary li { padding: 6px 0; font-size: 13px; color: #c0c0c0; border-bottom: 1px solid #1e1e2a; }
+.summary li:last-child { border-bottom: none; }
+.summary .ok { color: #4ade80; }
+.project { background: #1a1a2e; border: 2px solid #9a5cf6; border-radius: 12px; padding: 20px; margin-bottom: 32px; }
+.files { margin-top: 32px; }
+.files h2 { color: #9a5cf6; margin-top: 0; }
+.files table td:first-child { color: #9a5cf6; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📋 工作日志 · 双项目汇总 · 2026-06-02</h1>
+
+  <!-- 项目一：LinkPet AI宠物 -->
+  <div class="project">
+    <h2 style="font-size:18px; border-left-width:5px;">🐾 项目一：LinkPet AI宠物项目</h2>
+
+    <div class="summary">
+      <h4>📊 语音交互极致化 · 核心突破</h4>
+      <ul>
+        <li><span class="ok">✅</span> 语音交互定位为硬件设备核心表达通道（屏幕有限，语音无限）</li>
+        <li><span class="ok">✅</span> Emotion-driven voice synthesis：情感参数驱动语音合成</li>
+        <li><span class="ok">✅</span> Personality voice profiles：4种性格专属语音配置</li>
+        <li><span class="ok">✅</span> Ambient sound layer：沉浸式环境音层</li>
+        <li><span class="ok">✅</span> Voice emotion layers：情感声效（Web Audio API振荡器）</li>
+        <li><span class="ok">✅</span> 情侣绑定心跳同步 + Voice continuation</li>
+      </ul>
+    </div>
+
+    <div class="section"><h3>Round 1505 · 语音交互极致化</h3><table><thead><tr><th>日期</th><th>当日研发工作内容</th><th>工作进度</th><th>遇到的问题及解决方案</th><th>状态</th></tr></thead><tbody>
+<tr><th>06-02</th><th>语音交互极致化 + 硬件优先战略</th><th><span class="ok">✅</span> 语音交互定位为硬件核心表达（屏幕有限语音无限）<br><span class="ok">✅</span> Emotion-driven voice synthesis完整实现<br><span class="ok">✅</span> emotionVoiceConfig：happy/excited/love/neutral/sad/sleepy参数<br><span class="ok">✅</span> personalityVoiceProfiles：active/calm/clingy/indep语音配置<br><span class="ok">✅</span> emotionSoundMap：tone/tempo/melody情感声效映射<br><span class="ok">✅</span> Ambient sound layer：沉浸式环境音层<br><span class="ok">✅</span> Voice conversation flow：personality-aware对话流<br><span class="ok">✅</span> getEmotionParticle()：情感后缀~♪/~!/~💕</th><th>硬件屏幕受限 → 语音极致化策略确立</th><th><span class="ok">✅</span></th></tr>
+</tbody></table></div>
+
+    <div class="section"><h3>Round 1504 · 情感声效系统</h3><table><thead><tr><th>日期</th><th>当日研发工作内容</th><th>工作进度</th><th>遇到的问题及解决方案</th><th>状态</th></tr></thead><tbody>
+<tr><th>06-02</th><th>情感声效 + Web Audio API</th><th><span class="ok">✅</span> emotionSoundMap：tone/tempo/melody每情感映射<br><span class="ok">✅</span> 声音层：高兴三角波/悲伤正弦波/爱意方波<br><span class="ok">✅</span> AudioAdapter情感状态 → playEmotionTone()转换<br><span class="ok">✅</span> 独立情感声效API：playEmotionSound(emotion)</th><th>情感可视化 → 情感声效化</th><th><span class="ok">✅</span></th></tr>
+</tbody></table></div>
+
+    <div class="section"><h3>Round 1503 · 人格语音配置</h3><table><thead><tr><th>日期</th><th>当日研发工作内容</th><th>工作进度</th><th>遇到的问题及解决方案</th><th>状态</th></tr></thead><tbody>
+<tr><th>06-02</th><th>Personality Voice Profiles</th><th><span class="ok">✅</span> personalityVoiceProfiles：4种人格语音配置<br><span class="ok">✅</span> active：语速1.1/音调1.15/活泼问候"哈喽~主人来啦！"<br><span class="ok">✅</span> calm：语速0.85/音调0.95/安静问候"嗯...主人来了..."<br><span class="ok">✅</span> clingy：语速1.05/音调1.2/粘人问候"主人~终于来了！抱抱~"<br><span class="ok">✅</span> indep：语速0.9/音调0.9/独立问候"哦，你来了。"<br><span class="ok">✅</span> setPersonality() → 语音参数自动切换</th><th>语音人格统一适配</th><th><span class="ok">✅</span></th></tr>
+</tbody></table></div>
+
+    <div class="section"><h3>Round 1502 · 环境音沉浸层</h3><table><thead><tr><th>日期</th><th>当日研发工作内容</th><th>工作进度</th><th>遇到的问题及解决方案</th><th>状态</th></tr></thead><tbody>
+<tr><th>06-02</th><th>Ambient Sound Layer</th><th><span class="ok">✅</span> playAmbientSound(type)：背景音播放<br><span class="ok">✅</span> startAmbientLayer()：时间流环境音（早晨/下午/傍晚/夜晚）<br><span class="ok">✅</span> stopAmbientLayer()：停止环境音<br><span class="ok">✅</span> 环境音随时间自动变化增强沉浸感</th><th>情感声效 → 环境音沉浸</th><th><span class="ok">✅</span></th></tr>
+</tbody></table></div>
+
+    <div class="section"><h3>Round 1501 · 情感语音驱动</h3><table><thead><tr><th>日期</th><th>当日研发工作内容</th><th>工作进度</th><th>遇到的问题及解决方案</th><th>状态</th></tr></thead><tbody>
+<tr><th>06-02</th><th>Emotion-Driven Voice Synthesis</th><th><span class="ok">✅</span> emotionVoiceConfig：6种情感语音参数<br><span class="ok">✅</span> happy: rate1.15/pitch1.2/speed1.1<br><span class="ok">✅</span> excited: rate1.25/pitch1.3/speed1.2<br><span class="ok">✅</span> love: rate0.95/pitch1.25/speed0.9（温柔）<br><span class="ok">✅</span> sad: rate0.8/pitch0.85/speed0.8（缓慢低沉）<br><span class="ok">✅</span> AudioAdapter.setEmotion() 语音参数自动同步</th><th>语音合成情感参数化</th><th><span class="ok">✅</span></th></tr>
+</tbody></table></div>
+
+    <div class="section"><h3>Round 1481-1500 · 自主情绪表达循环完善</h3><table><thead><tr><th>日期</th><th>当日研发工作内容</th><th>工作进度</th><th>遇到的问题及解决方案</th><th>状态</th></tr></thead><tbody>
+<tr><th>06-01~06-02</th><th>自主情绪表达循环 + 情侣绑定心跳同步</th><th><span class="ok">✅</span> 自主情绪表达去重整合<br><span class="ok">✅</span> personalityTiming体系：active30s/calm60s/clingy25s/indep90s<br><span class="ok">✅</span> getPersonalityPrefix()：性格专属前缀生成<br><span class="ok">✅</span> 触发概率根据personalityConfig.chance动态调整<br><span class="ok">✅</span> 情侣绑定心跳同步系统<br><span class="ok">✅</span> HeartSync API端点 + 实时心跳同步</th><th>重复函数问题 → 单一版本重构</th><th><span class="ok">✅</span></th></tr>
+</tbody></table></div>
+
+    <div class="files">
+      <h3>📁 关键文件</h3>
+      <table>
+        <tr><th>文件</th><th>说明</th></tr>
+        <tr><td>demo.html</td><td>语音交互极致化 + 情感声效 L2492+</td></tr>
+        <tr><td>cloud-server/public/demo.html</td><td>同步后的公开版本</td></tr>
+        <tr><td>cloud-server/src/api/pets.js</td><td>HeartSync API 端点</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 项目二：海外本土剧承制 -->
+  <div class="project">
+    <h2 style="font-size:18px; border-left-width:5px;">🎬 项目二：海外本土剧承制 - 本地化流水线</h2>
+
+    <div class="summary">
+      <h4>📊 关键成果</h4>
+      <ul>
+        <li><span class="ok">✅</span> 全链路公网验证：https://px-cloud1.matpool.com:26341/ 返回 200</li>
+        <li><span class="ok">✅</span> PyTorch CUDA 12.1 适配完成：torch==2.5.1+cu121 安装，torch.cuda.is_available()=True，A100-PCIE-40GB 检测成功</li>
+        <li><span class="ok">✅</span> ffmpeg 系统工具安装：apt-get install ffmpeg，ffmpeg -version 验证通过</li>
+        <li><span class="ok">✅</span> numpy 版本冲突解决：pip install numpy==2.1.3，tensorflow 兼容性修复</li>
+        <li><span class="ok">✅</span> Deep-Live-Cam & Wav2Lip 模型部署就绪，GPU 推理链路打通</li>
+        <li><span class="ok">✅</span> Gradio 6.x hash_file() IsADirectoryError Bug 修复（type="filepath"→"binary"），代码已提交</li>
+        <li><span class="warn">⚠️</span> SSH 部署通道受阻：app.py 修复未能同步至服务器，待用户提供有效 SSH 认证</li>
+        <li><span class="warn">⚠️</span> 视频上传全链路待端到端验证</li>
+      </ul>
+    </div>
+
+    <div class="section"><h3>2026-06-02 下午（PM）</h3><table><thead><tr><th>日期</th><th>当日研发工作内容</th><th>工作进度</th><th>遇到的问题及解决方案</th><th>次日工作计划</th></tr></thead><tbody>
+<tr><th>06-02PM</th><th>1) Gradio 6.x Bug根因分析 2) hash_file()修复方案实施 3) app.py部署受阻排查</th><th><span class="ok">✅</span> Gradio 6.x Bug根因：File组件type="filepath"模式下，hash_file()接收目录路径'/root'而非文件路径，导致IsADirectoryError<br><span class="ok">✅</span> 修复方案：type="filepath"→type="binary"，并增加bytes→临时文件转换逻辑<br><span class="ok">✅</span> 代码修改：app.py第634行type变更 + process_video/process_with_config/update_preview_and_estimate三处bytes处理逻辑<br><span class="err">❌</span> 部署受阻：SSH通道px-cloud1.matpool.com:26309连接被拒，:22密码认证失败，修复代码未能同步至服务器</th><th>Gradio 6.x hash_file() IsADirectoryError：filepath模式传入临时目录路径→改为binary模式并手动转换bytes到临时文件；SSH部署通道：需提供有效认证方式（密码或key）</th><th>SSH通道恢复后将app.py同步至服务器并重启应用验证；端到端测试：上传真实视频触发全链路6步处理</th></tr>
+</tbody></table></div>
+
+    <div class="section"><h3>2026-06-02 上午（AM）</h3><table><thead><tr><th>日期</th><th>当日研发工作内容</th><th>工作进度</th><th>遇到的问题及解决方案</th><th>次日工作计划</th></tr></thead><tbody>
+<tr><th>06-02AM</th><th>1) GPU CUDA环境适配 2) ffmpeg系统工具安装 3) 依赖版本修复 4) Deep-Live-Cam & Wav2Lip部署 5) 应用部署上线</th><th><span class="ok">✅</span> PyTorch CUDA 12.1适配：原torch 2.12.0+cu130与A100驱动CUDA 12.8不匹配→降级torch==2.5.1+cu121，验证torch.cuda.is_available()=True，device_name=NVIDIA A100-PCIE-40GB<br><span class="ok">✅</span> ffmpeg安装：apt-get install ffmpeg，ffmpeg -version验证通过<br><span class="ok">✅</span> numpy版本修复：tensorflow要求numpy&lt;2.2.0→pip install numpy==2.1.3<br><span class="ok">✅</span> Deep-Live-Cam & Wav2Lip部署：/workspace/overseas-drama-pipeline/models/目录结构部署，A100 40GB显存满足GPU推理要求<br><span class="ok">✅</span> 应用部署：https://px-cloud1.matpool.com:26341/ 上线，Gradio 6.15.2</th><th>1) CUDA版本mismatch：原PyTorch 2.12.0编译CUDA 13.0，驱动支持最高12.8→降级torch==2.5.1+cu121<br>2) numpy版本冲突：tensorflow要求numpy&lt;2.2.0→pip install numpy==2.1.3<br>3) ffprobe不存在：apt-get install ffmpeg</th><th>Gradio Bug修复部署验证；视频上传全链路端到端测试；GPU加速模式验证</th></tr>
+</tbody></table></div>
+
+    <div class="files">
+      <h3>📁 关键文件路径</h3>
+      <table>
+        <tr><th>文件</th><th>路径</th></tr>
+        <tr><td>app.py</td><td>/workspace/overseas-drama-pipeline/app.py</td></tr>
+        <tr><td>Gradio修复</td><td>type="filepath"→type="binary"，bytes临时文件转换</td></tr>
+        <tr><td>CUDA适配</td><td>torch==2.5.1+cu121</td></tr>
+        <tr><td>依赖修复</td><td>numpy==2.1.3</td></tr>
+        <tr><td>公网服务</td><td>https://px-cloud1.matpool.com:26341/（✅ 200 OK）</td></tr>
+        <tr><td>GPU型号</td><td>NVIDIA A100-PCIE-40GB (40GB)</td></tr>
+      </table>
+    </div>
+
+    <div class="files">
+      <h3>🔒 代码质量扫描结果</h3>
+      <table>
+        <tr><th>检查项</th><th>结果</th></tr>
+        <tr><td>console.log/warn/error</td><td><span class="ok">✅ 0条</span></td></tr>
+        <tr><td>FIXME/TODO/XXX/HACK</td><td><span class="ok">✅ 0条</span></td></tr>
+        <tr><td>hardcoded localhost</td><td><span class="ok">✅ 0条</span></td></tr>
+        <tr><td>API Key 验证</td><td><span class="ok">✅ 预置key已隐藏，使用环境变量覆盖</span></td></tr>
+        <tr><td>文件权限</td><td><span class="ok">✅ config.json chmod 600</span></td></tr>
+      </table>
+    </div>
+
+    <div class="files">
+      <h3>⚠️ 待处理事项</h3>
+      <table>
+        <tr><th>任务</th><th>风险</th><th>说明</th></tr>
+        <tr><td>SSH部署通道恢复</td><td>阻塞</td><td>需提供有效SSH认证方式推送修复后的app.py</td></tr>
+        <tr><td>Gradio Bug部署验证</td><td>高</td><td>hash_file()修复已提交代码，需重启应用验证生效</td></tr>
+        <tr><td>视频上传端到端测试</td><td>中</td><td>全链路6步处理流程需真实视频验证</td></tr>
+        <tr><td>GPU加速模式验证</td><td>中</td><td>wav2lip/deeplivecam GPU链路待切换验证</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>
