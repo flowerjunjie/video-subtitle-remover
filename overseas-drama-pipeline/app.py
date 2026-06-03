@@ -363,6 +363,7 @@ def run_wav2lip(face_video: str, audio: str, output_path: str, target_face: str 
 
             # 获取对应 mel 段 (shape: [1, 1, 80, 16])
             mel_idx = min(mel_idx, mel.shape[1] - 16)
+            mel_idx = max(0, mel_idx)  # 防御：防止负索引
             mel_chunk = torch.FloatTensor(mel[:, mel_idx:mel_idx+16]).unsqueeze(0).unsqueeze(0).to(device)
             mel_idx += 1
 
