@@ -396,6 +396,9 @@ def run_wav2lip(face_video: str, audio: str, output_path: str, target_face: str 
         if isinstance(err_msg, bytes):
             err_msg = err_msg.decode(errors='replace')
         print(f"[Wav2Lip] ffmpeg warning: {err_msg}")
+    # 防御：ffmpeg 合成后检查输出文件完整性（returncode=0不代表文件完整）
+    if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+        raise RuntimeError(f"Wav2Lip 音频合并后输出文件为空: {output_path}")
     os.remove(temp_video)
     os.remove(audio_path)
 
