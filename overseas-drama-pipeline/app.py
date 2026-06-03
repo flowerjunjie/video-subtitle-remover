@@ -384,6 +384,12 @@ def run_wav2lip(face_video: str, audio: str, output_path: str, target_face: str 
         out.write(frame)
     out.release()
 
+    # 检查写入是否成功
+    if os.path.exists(temp_video) and os.path.getsize(temp_video) > 0:
+        pass  # 写入正常
+    else:
+        raise RuntimeError(f"Wav2Lip 视频写入失败（文件为空）: {temp_video}")
+
     # 合并音频 - 必须用 TTS 音频 (audio 参数)，不能用 audio_path（那是原视频音频）
     cmd = f'ffmpeg -y -i {shlex.quote(temp_video)} -i {shlex.quote(audio)} -map 0:v -map 1:a -c:v copy -c:a aac -shortest {shlex.quote(output_path)}'
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
