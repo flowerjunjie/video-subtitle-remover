@@ -89,7 +89,7 @@ def save_config(config: dict):
         with open(CONFIG_FILE, 'w') as f:
             json.dump(config, f, indent=2)
         os.chmod(CONFIG_FILE, 0o600)  # 限制配置文件权限，防止 API Key 泄露
-    except IOError as e:
+    except Exception as e:
         raise Exception(f"配置保存失败: {e}")
 
 # ============== 工具函数 ==============
