@@ -213,6 +213,8 @@ Rules:
 
 def format_srt_time(seconds: float) -> str:
     """将秒数转换为 SRT 时间格式 HH:MM:SS,mmm"""
+    # 防御：负数时间在 SRT 中无意义，截断为 0
+    seconds = max(0.0, seconds)
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
     secs = int(seconds % 60)
