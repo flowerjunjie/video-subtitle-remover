@@ -325,7 +325,8 @@ def run_wav2lip(face_video: str, audio: str, output_path: str, target_face: str 
 
     for frame in tqdm(frames, desc="[Wav2Lip] Detecting faces"):
         dets = detector.get_detections_for_batch(np.array([frame]))
-        if dets[0] is not None:
+        # 防御：dets 为空列表时避免 IndexError
+        if dets and dets[0] is not None:
             rect = dets[0]
             y1 = max(0, rect[1] - pady1)
             y2 = min(frame.shape[0], rect[3] + pady2)
