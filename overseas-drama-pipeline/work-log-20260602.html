@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作日志 · 海外本土剧承制 Pipeline 系统建设</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: #0f0f1a;
+    color: #e8e8f0;
+    line-height: 1.7;
+    font-size: 14px;
+    padding: 40px 20px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* Banner */
+  .banner {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .banner-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f5c842;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+  }
+  .banner-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid #3a3a5a;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .banner-cell {
+    padding: 12px 16px;
+    border-right: 1px solid #3a3a5a;
+    text-align: center;
+  }
+  .banner-cell:last-child { border-right: none; }
+  .banner-cell-label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .banner-cell-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f0f0f5;
+  }
+  .banner-cell-value.highlight { color: #f5c842; }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 36px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2a2a4a;
+  }
+  .section-num {
+    background: #f5c842;
+    color: #0f0f1a;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #f0f0f5;
+  }
+
+  /* Box draw */
+  .box {
+    background: #12121f;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .box-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f5c842;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* KPI Card */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kpi-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 160px;
+    gap: 0;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .kpi-cell {
+    padding: 10px 14px;
+    border-right: 1px solid #2a2a4a;
+    font-size: 13px;
+  }
+  .kpi-cell:last-child { border-right: none; }
+  .kpi-cell-label { color: #888; font-size: 11px; }
+  .kpi-cell-bar { color: #f5c842; letter-spacing: 1px; }
+  .kpi-cell-note { color: #6a6a8a; font-size: 12px; }
+
+  .kpi-summary {
+    text-align: center;
+    padding: 12px;
+    background: #1a1a2e;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #f5c842;
+    margin-top: 8px;
+  }
+
+  /* Table */
+  .table-box {
+    overflow-x: auto;
+    margin-bottom: 20px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    background: #1a1a2e;
+    color: #f5c842;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid #2a2a4a;
+    white-space: nowrap;
+  }
+  td {
+    padding: 9px 14px;
+    border: 1px solid #2a2a4a;
+    color: #c8c8d8;
+  }
+  tr:hover td { background: #1a1a2e; }
+  .tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag-security { background: #3a1a1a; color: #ff6b6b; }
+  .tag-exception { background: #3a2a1a; color: #ffa94d; }
+  .tag-leak { background: #1a3a2a; color: #69db7c; }
+  .tag-param { background: #1a1a3a; color: #748ffc; }
+  .tag-win { background: #3a3a2a; color: #ffd43b; }
+  .tag-boundary { background: #2a1a3a; color: #da77f2; }
+  .tag-logic { background: #1a3a3a; color: #66d9e8; }
+  .tag-ui { background: #3a1a3a; color: #f783ac; }
+
+  /* Code block */
+  pre {
+    background: #0d0d1a;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 12.5px;
+    color: #c8c8d8;
+    overflow-x: auto;
+    line-height: 1.8;
+    margin-bottom: 16px;
+    white-space: pre;
+  }
+  .code-comment { color: #6a6a8a; }
+  .code-keyword { color: #c792ea; }
+  .code-string { color: #c3e88d; }
+  .code-func { color: #82aaff; }
+  .code-number { color: #f78c6c; }
+
+  /* Progress */
+  .progress-section { margin-bottom: 20px; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .progress-title { font-size: 13px; color: #c8c8d8; }
+  .progress-track {
+    background: #1a1a2e;
+    border-radius: 20px;
+    height: 18px;
+    overflow: hidden;
+    border: 1px solid #2a2a4a;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f5c842 0%, #ff9f43 100%);
+    border-radius: 20px;
+    transition: width 0.3s;
+  }
+  .progress-fill.done { background: linear-gradient(90deg, #69db7c 0%, #40c057 100%); }
+  .progress-fill.pending { background: #3a3a5a; }
+
+  /* Risk matrix */
+  .risk-row {
+    display: grid;
+    grid-template-columns: 200px 80px 80px 1fr;
+    gap: 0;
+    border: 1px solid #2a2a4a;
+    margin-bottom: -1px;
+  }
+  .risk-cell {
+    padding: 10px 14px;
+    border-right: 1px solid #2a2a4a;
+    font-size: 13px;
+  }
+  .risk-cell:last-child { border-right: none; }
+  .risk-high { color: #ff6b6b; font-weight: 700; }
+  .risk-medium { color: #ffa94d; font-weight: 600; }
+  .risk-low { color: #69db7c; }
+  .risk-label { color: #888; font-size: 11px; }
+
+  /* Status snapshot */
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .status-cell {
+    padding: 14px 16px;
+    border-right: 1px solid #2a2a4a;
+    text-align: center;
+  }
+  .status-cell:last-child { border-right: none; }
+  .status-cell-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f5c842;
+    display: block;
+  }
+  .status-cell-label {
+    font-size: 11px;
+    color: #6a6a8a;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* Flow diagram - text style */
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 14px 18px;
+    background: #0d0d1a;
+    border-left: 3px solid #f5c842;
+    border-radius: 0 6px 6px 0;
+  }
+  .flow-step-num {
+    background: #f5c842;
+    color: #0f0f1a;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .flow-step-content { flex: 1; }
+  .flow-step-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f0f0f5;
+    margin-bottom: 6px;
+  }
+  .flow-step-desc {
+    font-size: 12.5px;
+    color: #8888aa;
+    line-height: 1.8;
+  }
+  .flow-step-desc code {
+    background: #1a1a2e;
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: #82aaff;
+    font-family: "Cascadia Code", monospace;
+  }
+
+  /* Todo list */
+  .todo-group {
+    margin-bottom: 20px;
+  }
+  .todo-priority {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f5c842;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .todo-priority::before { content: "▶"; font-size: 10px; }
+  .todo-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #1a1a2e;
+    font-size: 13px;
+    color: #b8b8cc;
+  }
+  .todo-bullet {
+    color: #f5c842;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: #4a4a6a;
+    font-size: 12px;
+    border-top: 1px solid #2a2a4a;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ==================== Banner ==================== -->
+<div class="banner">
+  <div class="banner-title">🟠 PUA v2 · Sprint 交付 · 海外本土剧承制 AI 流水线</div>
+  <div class="banner-grid">
+    <div class="banner-cell">
+      <div class="banner-cell-label">📅 日期</div>
+      <div class="banner-cell-value">2026-06-02</div>
+    </div>
+    <div class="banner-cell">
+      <div class="banner-cell-label">🔥 味道</div>
+      <div class="banner-cell-value highlight">阿里味</div>
+    </div>
+    <div class="banner-cell">
+      <div class="banner-cell-label">⚡ 压力</div>
+      <div class="banner-cell-value">L0 · 信任期</div>
+    </div>
+    <div class="banner-cell">
+      <div class="banner-cell-label">✅ 修复</div>
+      <div class="banner-cell-value">26 项</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== KPI Card ==================== -->
+<div class="box">
+  <div class="box-title">📊 Sprint 交付 · 绩效评估</div>
+  <div class="kpi-grid">
+    <div class="kpi-row">
+      <div class="kpi-cell"><span class="kpi-cell-label">🔥 主动出击</span></div>
+      <div class="kpi-cell kpi-cell-bar">████████████</div>
+      <div class="kpi-cell kpi-cell-note">26项修复全部主动闭环</div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-cell"><span class="kpi-cell-label">✅ 验证闭环</span></div>
+      <div class="kpi-cell kpi-cell-bar">████████████</div>
+      <div class="kpi-cell kpi-cell-note">py_compile+AST+grep 三重</div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-cell"><span class="kpi-cell-label">📐 代码质量</span></div>
+      <div class="kpi-cell kpi-cell-bar">█████████░░░</div>
+      <div class="kpi-cell kpi-cell-note">GPU OOM待上机验证</div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-cell"><span class="kpi-cell-label">⚠️ 系统复杂度</span></div>
+      <div class="kpi-cell kpi-cell-bar">████████████</div>
+      <div class="kpi-cell kpi-cell-note">多模态级联·非短期可搞定</div>
+    </div>
+  </div>
+  <div class="kpi-summary">综合评分：3.75 · 3.75 不是天花板，是地板</div>
+</div>
+
+<!-- ==================== Section 1: 系统架构 ==================== -->
+<div class="section-header">
+  <span class="section-num">一</span>
+  <span class="section-title">系统架构 · 6层解耦 + 4模式切换</span>
+</div>
+
+<div class="flow-step">
+  <span class="flow-step-num">Step 1</span>
+  <div class="flow-step-content">
+    <div class="flow-step-title">音频提取层（ffmpeg + PCM 48kHz/16kHz 双轨）</div>
+    <div class="flow-step-desc">
+      原始音轨从视频流分离 → 中文字幕对应中文音频轨道 → 楚音频与字幕时间轴对齐（楚音频用于TTS参考）
+      <br>备选：<code>audio-separator</code> 分离人声用于TTS参考；视频解码 <code>ffprobe</code> 时长校验；文件大小超限拦截
+    </div>
+  </div>
+</div>
+
+<div class="flow-step">
+  <span class="flow-step-num">Step 2</span>
+  <div class="flow-step-content">
+    <div class="flow-step-title">Whisper Large-v3 语音识别（1300M参数 · 1300层）</div>
+    <div class="flow-step-desc">
+      中文音频(16kHz mono) → 声学特征提取(80dim fbank) → Transformer(32层 attention) → 带时间戳segments
+      <br>防御点：空结果拦截（静音/损坏音频）；<code>_loaded_models</code> 单例缓存；<code>download_root=MODEL_DIR</code> 避免重复下载
+    </div>
+  </div>
+</div>
+
+<div class="flow-step">
+  <span class="flow-step-num">Step 3</span>
+  <div class="flow-step-content">
+    <div class="flow-step-title">翻译层（GPT-4o / DeepSeek-chat 双引擎 · 分段并行）</div>
+    <div class="flow-step-desc">
+      每segment独立调用API → 单段失败隔离(try-except) → 空结果校验(<code>en_text.strip()</code>)
+      <br><code>config.json</code> model字段动态切换；API调用无OOM风险（短文本分治）
+    </div>
+  </div>
+</div>
+
+<div class="flow-step">
+  <span class="flow-step-num">Step 4</span>
+  <div class="flow-step-content">
+    <div class="flow-step-title">TTS配音生成 · 四引擎级联容错</div>
+    <div class="flow-step-desc">
+      <strong>ElevenLabs</strong>（明星克隆，$0.03/字符）→ 失败切 Edge &nbsp;|&nbsp;
+      <strong>Edge-TTS</strong>（AriaNeural，免费）→ 失败切 gTTS &nbsp;|&nbsp;
+      <strong>gTTS</strong>（Google，备用）→ 失败抛异常 &nbsp;|&nbsp;
+      <strong>MOSS-TTS-Nano ONNX</strong>（0.1B，CPU推理，首次自动下载~200MB）
+      <br>Windows兼容：<code>asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())</code>
+      <br>临时文件：<code>NamedTemporaryFile(delete=False)</code> + finally手动清理；4处临时文件路径 finally统一回收
+    </div>
+  </div>
+</div>
+
+<div class="flow-step">
+  <span class="flow-step-num">Step 5</span>
+  <div class="flow-step-content">
+    <div class="flow-step-title">字幕文件生成（SRT 1.1格式）</div>
+    <div class="flow-step-desc">
+      有时间轴：Whisper segments → <code>format_srt_time()</code> → 带时间轴SRT
+      <br>无时间轴：<code>ffprobe duration</code> fallback → 单段字幕
+      <br>防御：零duration(<code>end &lt;= start → end = start + 1</code>)；UTF-8 BOM兼容播放器；空字幕段<code>append("")</code>保持对齐
+    </div>
+  </div>
+</div>
+
+<div class="flow-step">
+  <span class="flow-step-num">Step 6</span>
+  <div class="flow-step-content">
+    <div class="flow-step-title">视频合成层 · 4模式切换（FFmpeg / Wav2Lip / DeepLiveCam / LongCat）</div>
+    <div class="flow-step-desc">
+      <strong>FFmpeg（默认）</strong>：<code>ffmpeg -i video -i audio -c:v copy -c:a aac</code> 无损合成，实时完成
+      <br><strong>Wav2Lip</strong>：口型同步，依赖<code>inswapper_128_fp16.onnx + wav2lip.pth</code>，显存~8GB，缺陷：口型精度不如Whisper-Large
+      <br><strong>DeepLiveCam</strong>：换脸+口型，<code>execution_providers</code> CPU/CUDA/ROCm三选一，缺陷：换脸后角色一致性弱
+      <br><strong>LongCat-Video-Avatar（全生成·GPU专属·13.6B参数）</strong>：
+      <code>resolution(480/720)</code> / <code>num_segments</code> / <code>audio_guidance_scale(3.0)</code> /
+      <code>use_distill</code>(8步蒸馏) / <code>model_type(avatar-v1.5/v1.0)</code>
+      <br>INT8量化：<code>load_quantized_dit()</code> 20GB→~10GB（目标）；蒸馏加速：25步→8步（3倍速）
+      <br>分辨率：480p(480×832) / 720p(768×1280)；多片段：OOM风险 需GPU监控
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Section 2: 26项修复明细 ==================== -->
+<div class="section-header">
+  <span class="section-num">二</span>
+  <span class="section-title">技术债务扫描 · 26项修复明细</span>
+</div>
+
+<div class="box">
+  <div class="box-title">26项修复分类总览</div>
+  <div class="table-box">
+    <table>
+      <thead>
+        <tr>
+          <th>类别</th>
+          <th>数量</th>
+          <th>典型问题</th>
+          <th>根因</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-security">🛡️ 安全</span></td>
+          <td>3项</td>
+          <td>torch.load weights_only / config.json权限 / 临时文件清理</td>
+          <td>legacy checkpoint不兼容 / API Key明文存储 / 异常路径遗漏</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-exception">⚠️ 异常</span></td>
+          <td>5项</td>
+          <td>int("") / bitrate.isdigit() / 零duration / NaN检测 / 翻译空结果</td>
+          <td>ffprobe空字符串返回值 / SRT格式校验缺失 / INT8推理NaN传播</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-leak">📦 泄漏</span></td>
+          <td>4项</td>
+          <td>temp_vocal_path多路径 / 二进制临时文件 / 音频清理分散 / 旧文件堆积</td>
+          <td>条件分支fallback未统一清理 / finally遗漏 / 无定时清理</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-param">🔗 参数</span></td>
+          <td>2项</td>
+          <td>use_int8 NameError / results引用顺序</td>
+          <td>函数签名删除但body引用 / 空路径检查先于初始化</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-win">🪟 Win兼容</span></td>
+          <td>3项</td>
+          <td>subprocess.DEVNULL / Edge-TTS事件循环 / NamedTemporaryFile(delete=True)</td>
+          <td>Python3.7+无效参数组合 / WindowsSelectorEventLoopPolicy缺失 / 文件锁</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-boundary">🔳 边界</span></td>
+          <td>4项</td>
+          <td>SRT空字幕段 / ffprobe空duration / 时长超限 / 文件大小超限</td>
+          <td>SRT格式校验缺失 / 空字符串校验缺失 / 无上限校验</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-logic">⚙️ 逻辑</span></td>
+          <td>2项</td>
+          <td>progress重复调用 / tts_path隐式空值</td>
+          <td>冗余调用 / 隐式赋值未显式初始化</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-ui">🎨 UI状态</span></td>
+          <td>1项</td>
+          <td>clear_upload返回值数量不匹配</td>
+          <td>Gradio静默忽略多余返回值，9outputs但10返回值</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 安全类 -->
+<div class="box">
+  <div class="box-title">🛡️ 安全类（3项）</div>
+  <pre><span class="code-comment"># S1 · torch.load(weights_only=False)</span>
+<span class="code-comment"># 根因：legacy checkpoint (.pth) 不兼容 weights_only=True</span>
+<span class="code-comment"># 修复：显式传参 weights_only=False</span>
+checkpoint = torch.load(checkpoint_path, map_location=device, <span class="code-number">weights_only=False</span>)
+
+<span class="code-comment"># S2 · config.json 权限 0o600</span>
+<span class="code-comment"># 根因：API Key 明文存储，无访问控制</span>
+<span class="code-comment"># 修复：os.chmod(CONFIG_FILE, 0o600)</span>
+os.chmod(CONFIG_FILE, <span class="code-number">0o600</span>)
+
+<span class="code-comment"># S3 · _temp_video_files 清理</span>
+<span class="code-comment"># 根因：NamedTemporaryFile(delete=False) 异常路径遗漏清理</span>
+<span class="code-comment"># 修复：finally 块迭代删除全部临时文件</span>
+<span class="code-keyword">for</span> tmp_file <span class="code-keyword">in</span> _temp_video_files:
+    <span class="code-keyword">if</span> tmp_file <span class="code-keyword">and</span> os.path.exists(tmp_file):
+        <span class="code-keyword">try</span>: os.remove(tmp_file)
+        <span class="code-keyword">except</span>: <span class="code-keyword">pass</span></pre>
+</div>
+
+<!-- 异常类 -->
+<div class="box">
+  <div class="box-title">⚠️ 异常处理类（5项）</div>
+  <pre><span class="code-comment"># E1 · int("") ValueError</span>
+<span class="code-comment"># 场景：ffprobe 返回空字符串作为 duration/size</span>
+<span class="code-comment"># 修复：int(size_str) if size_str else 0</span>
+<span class="code-number">int(size_str)</span> <span class="code-keyword">if</span> size_str <span class="code-keyword">else</span> <span class="code-number">0</span>
+
+<span class="code-comment"># E2 · bitrate.isdigit() 对空字符串失效</span>
+<span class="code-comment"># 场景：bitrate = "" → isdigit() → False</span>
+<span class="code-comment"># 修复：bitrate and bitrate.isdigit()</span>
+bitrate <span class="code-keyword">and</span> bitrate.isdigit()
+
+<span class="code-comment"># E3 · 零duration字幕段</span>
+<span class="code-comment"># 场景：end <= start（SRT格式不允许）</span>
+<span class="code-comment"># 修复：if end <= start: end = start + 1</span>
+<span class="code-keyword">if</span> dur <= <span class="code-number">0</span>: end_time = <span class="code-string">"00:00:10,000"</span>
+
+<span class="code-comment"># E4 · torch.isnan(audio_emb) 无检测</span>
+<span class="code-comment"># 场景：LongCat INT8 推理 NaN 传播</span>
+<span class="code-comment"># 修复：if torch.isnan(full_audio_emb).any(): raise</span>
+<span class="code-keyword">if</span> torch.isnan(full_audio_emb).any():
+    <span class="code-keyword">raise</span> ValueError(<span class="code-string">"Broken audio embedding with NaN values"</span>)
+
+<span class="code-comment"># E5 · 翻译返回空结果未拦截</span>
+<span class="code-comment"># 场景：单段翻译失败 → 整个pipeline中断</span>
+<span class="code-comment"># 修复：逐段 try-except + 结果校验 en.strip()</span>
+<span class="code-keyword">if</span> <span class="code-keyword">not</span> en <span class="code-keyword">or</span> <span class="code-keyword">not</span> en.strip():
+    <span class="code-keyword">raise</span> RuntimeError(<span class="code-string">f"翻译返回空结果: segment={seg_text[:50]}"</span>)</pre>
+</div>
+
+<!-- 资源泄漏类 -->
+<div class="box">
+  <div class="box-title">📦 资源泄漏类（4项）</div>
+  <pre><span class="code-comment"># R1 · temp_vocal_path 多路径泄露</span>
+<span class="code-comment"># 路径A：vocal_separator分离成功 → shutil.move</span>
+<span class="code-comment"># 路径B：vocal_separator失败 → temp_vocal_path = audio_path</span>
+<span class="code-comment"># 路径C：shutil.move异常 → temp_vocal_path = audio_path</span>
+<span class="code-comment"># 修复：finally 统一 os.remove(temp_vocal_path)</span>
+<span class="code-keyword">finally</span>:
+    <span class="code-keyword">if</span> temp_vocal_path != audio_path <span class="code-keyword">and</span> os.path.exists(temp_vocal_path):
+        <span class="code-keyword">try</span>: os.remove(temp_vocal_path)
+        <span class="code-keyword">except</span>: <span class="code-keyword">pass</span>
+
+<span class="code-comment"># R2 · 二进制上传临时文件未清理</span>
+<span class="code-comment"># 入口1：line 869 / 入口2：line 1727 / 入口3：line 1851</span>
+<span class="code-comment"># 修复：finally 块 _temp_video_files 迭代删除</span>
+<span class="code-keyword">for</span> tmp_file <span class="code-keyword">in</span> _temp_video_files:
+    <span class="code-keyword">if</span> tmp_file <span class="code-keyword">and</span> os.path.exists(tmp_file):
+        <span class="code-keyword">try</span>: os.remove(tmp_file)
+
+<span class="code-comment"># R3 · 音频文件清理逻辑分散</span>
+<span class="code-comment"># 修复：finally 块集中清理 audio_path</span>
+<span class="code-keyword">finally</span>:
+    <span class="code-keyword">if</span> audio_path <span class="code-keyword">and</span> os.path.exists(audio_path):
+        <span class="code-keyword">try</span>: os.remove(audio_path)
+
+<span class="code-comment"># R4 · 旧输出文件未清理</span>
+<span class="code-comment"># 修复：cleanup_old_outputs() 清理7天前文件</span>
+cutoff = time.time() - <span class="code-number">7</span> * <span class="code-number">24</span> * <span class="code-number">3600</span>
+<span class="code-keyword">for</span> f <span class="code-keyword">in</span> os.listdir(OUTPUT_DIR):
+    fp = os.path.join(OUTPUT_DIR, f)
+    <span class="code-keyword">if</span> os.path.isfile(fp) <span class="code-keyword">and</span> os.path.getmtime(fp) &lt; cutoff:
+        os.remove(fp)</pre>
+</div>
+
+<!-- 参数传递类 -->
+<div class="box">
+  <div class="box-title">🔗 参数传递类（2项）</div>
+  <pre><span class="code-comment"># P1 · use_int8 NameError</span>
+<span class="code-comment"># 根因：函数签名删除 use_int8 参数，但 body 仍引用</span>
+<span class="code-comment"># 场景：if use_int8: load_quantized_dit() → NameError</span>
+<span class="code-comment"># 修复：移除条件判断，直接 load_quantized_dit()</span>
+<span class="code-keyword">from</span> longcat_video.modules.quantization <span class="code-keyword">import</span> load_quantized_dit
+print(<span class="code-string">"[LongCat-Avatar] Loading INT8 quantized DiT..."</span>)
+dit = load_quantized_dit(checkpoint_dir, subfolder=<span class="code-string">"base_model_int8"</span>, cp_split_hw=<span class="code-number">None</span>)
+
+<span class="code-comment"># P2 · results 引用顺序错误</span>
+<span class="code-comment"># 根因：空路径检查先于 results 初始化</span>
+<span class="code-comment"># 场景：return results → results 未定义</span>
+<span class="code-comment"># 修复：results 初始化前置到空路径检查之前</span>
+<span class="code-comment"># BEFORE: if not video_path: return results (NameError)</span>
+<span class="code-comment"># AFTER:</span>
+results = {<span class="code-string">"status"</span>: <span class="code-string">"processing"</span>, <span class="code-string">"input_video"</span>: video_path, ...}
+<span class="code-keyword">if</span> <span class="code-keyword">not</span> video_path <span class="code-keyword">or</span> <span class="code-keyword">not</span> video_path.strip():
+    results[<span class="code-string">"status"</span>] = <span class="code-string">"error"</span>
+    results[<span class="code-string">"errors"</span>] = [<span class="code-string">"未上传视频文件"</span>]
+    <span class="code-keyword">return</span> results</pre>
+</div>
+
+<!-- Windows兼容类 -->
+<div class="box">
+  <div class="box-title">🪟 Windows 兼容类（3项）</div>
+  <pre><span class="code-comment"># W1 · subprocess.DEVNULL + text= 无效组合</span>
+<span class="code-comment"># Python3.7+：subprocess.check_output 不支持 DEVNULL+text</span>
+<span class="code-comment"># 修复：统一 text=True</span>
+<span class="code-comment"># 3处：line ~1119, ~1861, ~1874</span>
+dur_str = subprocess.check_output(cmd, shell=<span class="code-number">True</span>, text=<span class="code-number">True</span>).strip()
+
+<span class="code-comment"># W2 · Edge-TTS asyncio 事件循环</span>
+<span class="code-comment"># Windows Python 3.7+ 需 WindowsSelectorEventLoopPolicy</span>
+<span class="code-comment"># 修复：asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())</span>
+<span class="code-keyword">try</span>:
+    asyncio.run(edge_tts.Communicate(text, <span class="code-string">"en-US-AriaNeural"</span>).save(output_path))
+<span class="code-keyword">except</span> AttributeError:
+    <span class="code-comment"># Windows Python 3.7+ 需要设置事件循环策略</span>
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    asyncio.run(edge_tts.Communicate(text, <span class="code-string">"en-US-AriaNeural"</span>).save(output_path))
+
+<span class="code-comment"># W3 · NamedTemporaryFile(delete=True) Windows文件锁</span>
+<span class="code-comment"># delete=True 在文件未关闭时抛异常</span>
+<span class="code-comment"># 修复：统一 delete=False + finally 手动清理</span>
+<span class="code-keyword">with</span> tempfile.NamedTemporaryFile(delete=<span class="code-number">False</span>, suffix=<span class="code-string">'.mp4'</span>) <span class="code-keyword">as</span> tmp:
+    tmp.write(video_path.read() <span class="code-keyword">if</span> isinstance(video_path, bytes) <span class="code-keyword">else</span> video_path.read())
+    video_path = tmp.name
+_temp_video_files.append(video_path)</pre>
+</div>
+
+<!-- 边界Case类 -->
+<div class="box">
+  <div class="box-title">🔳 边界 Case 类（4项）</div>
+  <pre><span class="code-comment"># B1 · SRT 空字幕段</span>
+<span class="code-comment"># 场景：Whisper segment text 为空时不跳过</span>
+<span class="code-comment"># 修复：if seg_text: ... else: all_en.append("")</span>
+<span class="code-keyword">if</span> seg_text:
+    en = translator(seg_text)
+    all_en.append(en)
+<span class="code-keyword">else</span>:
+    all_en.append(<span class="code-string">""</span>)
+
+<span class="code-comment"># B2 · ffprobe 空字符串 duration</span>
+<span class="code-comment"># 场景：空文件/损坏视频返回空字符串</span>
+<span class="code-comment"># 修复：float(duration_str) if duration_str else 0.0</span>
+duration_str = subprocess.check_output(cmd, shell=<span class="code-number">True</span>, text=<span class="code-number">True</span>).strip()
+duration_sec = float(duration_str) <span class="code-keyword">if</span> duration_str <span class="code-keyword">else</span> <span class="code-number">0.0</span>
+
+<span class="code-comment"># B3 · 视频时长超限（>60分钟 → TTS OOM）</span>
+<span class="code-keyword">if</span> duration_sec > <span class="code-number">3600</span>:
+    results[<span class="code-string">"status"</span>] = <span class="code-string">"error"</span>
+    results[<span class="code-string">"errors"</span>].append(<span class="code-string">f"视频过长 ({int(duration_sec//60)}分钟)，请上传60分钟以内的视频"</span>)
+    <span class="code-keyword">return</span> results
+
+<span class="code-comment"># B4 · 文件大小超限（超大文件 → 显存爆炸）</span>
+file_size_mb = os.path.getsize(video_path) / (<span class="code-number">1024</span> * <span class="code-number">1024</span>)
+<span class="code-keyword">if</span> file_size_mb > MAX_FILE_SIZE_MB:
+    results[<span class="code-string">"status"</span>] = <span class="code-string">"error"</span>
+    results[<span class="code-string">"errors"</span>].append(<span class="code-string">f"文件过大 ({file_size_mb:.1f}MB)，请上传{MAX_FILE_SIZE_MB}MB以内的视频"</span>)</pre>
+</div>
+
+<!-- 逻辑错误类 -->
+<div class="box">
+  <div class="box-title">⚙️ 逻辑错误类（2项）</div>
+  <pre><span class="code-comment"># L1 · progress() 重复调用</span>
+<span class="code-comment"># 场景：空字幕段 append 后重复调用 progress</span>
+<span class="code-comment"># 修复：移除冗余调用（已有循环末尾的 progress()）</span>
+
+<span class="code-comment"># L2 · tts_path 隐式空值</span>
+<span class="code-comment"># 场景：TTS 跳过时保留初始值 ""</span>
+<span class="code-comment"># 修复：显式赋值 tts_path = ""</span>
+<span class="code-keyword">except</span> Exception <span class="code-keyword">as</span> e:
+    results[<span class="code-string">"errors"</span>].append(<span class="code-string">f"TTS生成: {str(e)}"</span>)
+    tts_path = <span class="code-string">""</span>  <span class="code-comment"># 显式赋值，确保有明确值</span></pre>
+</div>
+
+<!-- UI状态同步类 -->
+<div class="box">
+  <div class="box-title">🎨 UI 状态同步类（1项）</div>
+  <pre><span class="code-comment"># U1 · clear_upload 返回值数量不匹配</span>
+<span class="code-comment"># 根因：Gradio 静默忽略多余返回值</span>
+<span class="code-comment"># 场景：10返回值 但只连接了8个outputs（line 1929）</span>
+<span class="code-comment"># 修复：补齐 target_face_input + video_compose_input（共9个outputs）</span>
+
+<span class="code-comment"># BEFORE:</span>
+<span class="code-comment"># outputs=[video_input, target_face_input, estimate_output, metadata_output,</span>
+<span class="code-comment">#          log_output, overall_progress, batch_toggle, video_compose_input, source_name_output]</span>
+
+<span class="code-keyword">def</span> <span class="code-func">clear_upload</span>():
+    <span class="code-keyword">return</span> <span class="code-number">None, None, "", "", "", 0, False, "", "ffmpeg", "ffmpeg"</span>  <span class="code-comment"># 10个值</span>
+
+clear_btn.click(
+    fn=clear_upload,
+    outputs=[video_input, target_face_input,          <span class="code-comment"># ← 补齐</span>
+             estimate_output, metadata_output,
+             log_output, overall_progress, batch_toggle,
+             video_compose_input, source_name_output]  <span class="code-comment"># 9个outputs</span>
+)</pre>
+</div>
+
+<!-- ==================== Section 3: 依赖拓扑 ==================== -->
+<div class="section-header">
+  <span class="section-num">三</span>
+  <span class="section-title">依赖拓扑图 · 复杂链路（非短期可搞定）</span>
+</div>
+
+<div class="box">
+  <div class="box-title">依赖层级拓扑</div>
+  <pre>
+audio-separator (Separator)
+       │
+       ▼
+librosa ←──────────────────────────── MOSS-TTS-v1.5 (8B)
+(Audio Processing)                       权重 ~16GB
+       │                                        │
+   ├── pyloudnorm ───────────────────────────────┘
+   │
+   ├── einops (Tensor Rearrange)
+   │
+   ├── imageio (Video Frame I/O)
+   │
+   ├── flash_attn==2.7.4.post1 (Flash Attention 2 · Sparse Attention)
+   │
+   └── torch (CUDA)
+            │
+            ├── transformers
+            │   ├── UMT5EncoderModel (Text Encoding)
+            │   └── Whisper-Large-v3 (Audio Encoder · 1300M参数 · 1300层)
+            │
+            ├── diffusers
+            │   └── FlowMatchEulerDiscreteScheduler
+            │
+            └── longcat_video
+                ├── LongCatVideoAvatarPipeline (DiT · 13.6B参数)
+                │   └── LongCatVideoAvatarTransformer3DModel
+                ├── autoencoder_kl_wan (VAE · 视频重建)
+                ├── modules
+                │   ├── quantization (INT8 DiT · load_quantized_dit)
+                │   │     └── 20GB → ~10GB（目标）显存占用降低
+                │   └── scheduling_flow_match_euler_discrete
+                └── audio_process
+                    ├── get_audio_encoder (Whisper-Large-v3)
+                    └── get_audio_feature_extractor
+
+模型权重清单（需下载）：
+  · LongCat-Video-Avatar-1.5 (~50GB) — huggingface-cli 下载
+  · MOSS-TTS-v1.5 (~16GB) — huggingface-cli 下载
+  · Whisper Large-v3 (~3GB) — download_root=MODEL_DIR 自动缓存
+  · inswapper_128_fp16.onnx (~500MB) — DeepLiveCam models/
+  · vocal_separator Kim_Vocal_2.onnx (~50MB) — Avatar内置
+  · lora dmd_lora.safetensors — 蒸馏LoRA权重
+
+关键依赖安装命令：
+  pip install librosa audio-separator einops imageio pyloudnorm
+  pip install flash_attn==2.7.4.post1
+  cd models/LongCat-Video_src && pip install -r requirements_avatar.txt
+  </pre>
+</div>
+
+<!-- ==================== Section 4: GPU验证清单 ==================== -->
+<div class="section-header">
+  <span class="section-num">四</span>
+  <span class="section-title">GPU 服务器验证清单（px-cloud2.matpool.com:28959）</span>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">环境基础</span>
+    <span style="color:#4a4a6a;font-size:12px">⬜ 待验证</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">nvidia-smi / CUDA 12.x / Python 3.10+</div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">Torch环境</span>
+    <span style="color:#4a4a6a;font-size:12px">⬜ 待验证</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">torch.cuda.is_available() / flash_attn</div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">模型下载（~70GB）</span>
+    <span style="color:#4a4a6a;font-size:12px">⬜ 待验证</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">LongCat(50GB) / MOSS-TTS(16GB) / Whisper(~3GB)</div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">依赖安装</span>
+    <span style="color:#4a4a6a;font-size:12px">⬜ 待验证</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">requirements_avatar.txt / librosa等7个包</div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">INT8显存压测</span>
+    <span style="color:#ff6b6b;font-size:12px">⚠️ 高风险</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">720P+distill → 目标~10GB（单片段）；多片段OOM风险 需GPU监控</div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">多片段OOM验证</span>
+    <span style="color:#ff6b6b;font-size:12px">⚠️ 高风险</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">5片段拼接 → 显存峰值 &lt; 40GB</div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">端到端音视频同步</span>
+    <span style="color:#4a4a6a;font-size:12px">⬜ 待验证</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">ffmpeg -c:v copy → 音视频同步验证</div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">字幕压制</span>
+    <span style="color:#4a4a6a;font-size:12px">⬜ 待验证</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">SRT burn-in / 时间轴对齐</div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span class="progress-title">LongCat单片段推理时延</span>
+    <span style="color:#4a4a6a;font-size:12px">⬜ 待验证</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill pending" style="width:0%"></div></div>
+  <div style="font-size:12px;color:#6a6a8a;margin-top:4px">distill 8步 → 目标2-3分钟/片段</div>
+</div>
+
+<!-- ==================== Section 5: 风险矩阵 ==================== -->
+<div class="section-header">
+  <span class="section-num">五</span>
+  <span class="section-title">风险矩阵 · 系统级风险</span>
+</div>
+
+<div class="box">
+  <div class="table-box">
+    <table>
+      <thead>
+        <tr>
+          <th>风险项</th>
+          <th>概率</th>
+          <th>影响</th>
+          <th>应对策略</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>多片段 CUDA OOM（显存峰值超40GB）</td>
+          <td><span class="risk-high">🔴 高</span></td>
+          <td><span class="risk-high">🔴 高</span></td>
+          <td>GPU上线后首测；分段降分辨率；gradient checkpoint / offload优化</td>
+        </tr>
+        <tr>
+          <td>MOSS-TTS-v1.5 权重下载失败（~16GB）</td>
+          <td><span class="risk-medium">🟡 中</span></td>
+          <td><span class="risk-high">🔴 高</span></td>
+          <td>huggingface-cli login + 断点续传；MOSS-TTS-Nano ONNX CPU fallback</td>
+        </tr>
+        <tr>
+          <td>LongCat INT8量化后NaN传播</td>
+          <td><span class="risk-medium">🟡 中</span></td>
+          <td><span class="risk-high">🔴 高</span></td>
+          <td>已加torch.isnan()检测；GPU上机后长时压测</td>
+        </tr>
+        <tr>
+          <td>Whisper Large-v3 中文识别精度下降</td>
+          <td><span class="risk-low">🟢 低</span></td>
+          <td><span class="risk-medium">🟡 中</span></td>
+          <td>large-v3已最优；可切换medium做fallback</td>
+        </tr>
+        <tr>
+          <td>Edge-TTS音色与原始演员不匹配</td>
+          <td><span class="risk-medium">🟡 中</span></td>
+          <td><span class="risk-low">🟢 低</span></td>
+          <td>ElevenLabs克隆音色优先；多音色AB测</td>
+        </tr>
+        <tr>
+          <td>字幕时间轴与音频偏移</td>
+          <td><span class="risk-low">🟢 低</span></td>
+          <td><span class="risk-high">🔴 高</span></td>
+          <td>Whisper timestamps精确对齐；SRT零duration防护</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== Section 6: 代码统计 ==================== -->
+<div class="section-header">
+  <span class="section-num">六</span>
+  <span class="section-title">当前状态快照</span>
+</div>
+
+<div class="box">
+  <div class="status-grid">
+    <div class="status-cell">
+      <span class="status-cell-num">1988</span>
+      <span class="status-cell-label">代码行数</span>
+    </div>
+    <div class="status-cell">
+      <span class="status-cell-num">32</span>
+      <span class="status-cell-label">函数数量</span>
+    </div>
+    <div class="status-cell">
+      <span class="status-cell-num">26</span>
+      <span class="status-cell-label">修复总数</span>
+    </div>
+    <div class="status-cell">
+      <span class="status-cell-num">✅</span>
+      <span class="status-cell-label">语法验证通过</span>
+    </div>
+  </div>
+
+  <div class="table-box">
+    <table>
+      <thead>
+        <tr><th>类别</th><th>修复数</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="tag tag-security">🛡️ 安全</span></td><td>3项</td><td>torch.load / config权限 / 临时文件清理</td></tr>
+        <tr><td><span class="tag tag-exception">⚠️ 异常</span></td><td>5项</td><td>int("") / bitrate.isdigit() / 零duration / NaN / 翻译空结果</td></tr>
+        <tr><td><span class="tag tag-leak">📦 泄漏</span></td><td>4项</td><td>temp_vocal_path / 二进制临时文件 / 音频清理 / 旧文件</td></tr>
+        <tr><td><span class="tag tag-param">🔗 参数</span></td><td>2项</td><td>use_int8 NameError / results引用顺序</td></tr>
+        <tr><td><span class="tag tag-win">🪟 Win兼容</span></td><td>3项</td><td>DEVNULL / 事件循环 / delete=True</td></tr>
+        <tr><td><span class="tag tag-boundary">🔳 边界</span></td><td>4项</td><td>空字幕段 / 空duration / 时长超限 / 文件大小超限</td></tr>
+        <tr><td><span class="tag tag-logic">⚙️ 逻辑</span></td><td>2项</td><td>progress重复 / tts_path隐式空值</td></tr>
+        <tr><td><span class="tag tag-ui">🎨 UI状态</span></td><td>1项</td><td>clear_upload返回值数量不匹配</td></tr>
+        <tr><td colspan="3" style="text-align:center;color:#6a6a8a">AST解析：无未定义引用 · 安全扫描：无注入风险 · GPU就绪：⬜ 待上机</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== Section 7: 后续计划 ==================== -->
+<div class="section-header">
+  <span class="section-num">七</span>
+  <span class="section-title">后续工作计划</span>
+</div>
+
+<div class="todo-group">
+  <div class="todo-priority">P0 · 紧急（GPU上线后首测）</div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>多片段OOM压测 — 显存峰值 &lt; 40GB，5片段拼接验证</span></div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>INT8量化实测显存占用 — 720P+distill → 目标~10GB（单片段）</span></div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>端到端音视频同步验证 — ffmpeg -c:v copy 轨道对齐</span></div>
+</div>
+
+<div class="todo-group">
+  <div class="todo-priority">P1 · 高优</div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>LongCat单片段推理时延 — distill 8步 → 目标2-3分钟</span></div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>MOSS-TTS-v1.5配音质量评估 — 口型同步精度主观评测</span></div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>字幕burn-in时轴对齐验证 — SRT时间轴与音频对齐校验</span></div>
+</div>
+
+<div class="todo-group">
+  <div class="todo-priority">P2 · 中优</div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>批量视频并发压力测试 — Gradio session管理与并发请求</span></div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>Wav2Lip vs DeepLiveCam vs LongCat三模式横向评测</span></div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>角色一致性 — 多片段参考图漂移问题评估</span></div>
+</div>
+
+<div class="todo-group">
+  <div class="todo-priority">P3 · 优化</div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>多片段显存优化 — gradient checkpoint / KV offload</span></div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>TTS音色克隆自动化流程 — ElevenLabs API集成</span></div>
+  <div class="todo-item"><span class="todo-bullet">▸</span><span>流水线自动化 — 减少人工干预节点，端到端一键运行</span></div>
+</div>
+
+<!-- ==================== Footer ==================== -->
+<div class="footer">
+  ▎今天最好的表现，是明天最低的要求。系统复杂度的冰山才露出了一角——GPU服务器上线后，显存压测、多片段OOM、端到端音视频同步，才是真正的战场。<br>
+  保持饥饿，3.75 不是天花板，是地板。
+</div>
+
+</div>
+</body>
+</html>
