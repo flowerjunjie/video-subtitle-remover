@@ -1834,7 +1834,15 @@ def create_demo():
                 return combined_status, first_video, None, combined_errors, combined_logs, 100, source_name
 
             # 单文件模式
-            results = process_video(video_path, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode, longcat_resolution=longcat_resolution, longcat_segments=longcat_segments, longcat_audio_guidance=longcat_audio_guidance, longcat_use_distill=longcat_use_distill)
+            try:
+                results = process_video(video_path, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode, longcat_resolution=longcat_resolution, longcat_segments=longcat_segments, longcat_audio_guidance=longcat_audio_guidance, longcat_use_distill=longcat_use_distill)
+            finally:
+                # 清理 process_with_config 阶段创建的临时视频文件
+                if _temp_video_path and os.path.exists(_temp_video_path):
+                    try:
+                        os.remove(_temp_video_path)
+                    except Exception:
+                        pass
 
             # 状态信息
             status_msg = f"处理状态: {results.get('status', 'unknown')}\n"
