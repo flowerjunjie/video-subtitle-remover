@@ -1871,7 +1871,6 @@ def create_demo():
 
                 # 第一个输出视频作为预览
                 first_video = all_outputs[0] if all_outputs else None
-                # 批量模式显示"批量模式"
                 source_name = f"批量模式 ({len(video_path)} 个文件)"
 
                 return combined_status, first_video, None, combined_errors, combined_logs, 100, source_name
@@ -1959,9 +1958,11 @@ def create_demo():
                         try:
                             cmd = f'ffprobe -v quiet -show_entries format=duration,size -of csv=p=0 {shlex.quote(video_path)}'
                             result = subprocess.check_output(cmd, shell=True, text=True).strip()
-                            duration_str, size_str = result.split(',', 1)
+                            parts = result.split(',')
+                            duration_str = parts[0] if len(parts) >= 1 else ''
+                            size_str = parts[1] if len(parts) >= 2 else ''
                             duration_sec = float(duration_str) if duration_str else 0.0
-                            size_bytes = int(size_str) if size_str else 0
+                            size_bytes = int(size_str) if size_str and size_str.isdigit() else 0
                             # 粗略估算：base模型约 0.5x realtime，medium 约 2x，large 约 3x
                             multiplier = {"tiny": 0.3, "base": 0.5, "small": 1.0, "medium": 2.0, "large": 3.0}.get(model_size, 0.5)
                             estimated_sec = duration_sec * multiplier
