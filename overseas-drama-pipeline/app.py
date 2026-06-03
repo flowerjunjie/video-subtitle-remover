@@ -953,8 +953,10 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
     try:
         cmd = f'ffprobe -v quiet -show_entries format=duration -of csv=p=0 {shlex.quote(video_path)}'
         duration_str = subprocess.check_output(cmd, shell=True, text=True).strip()
-        duration_sec = float(duration_str)
-        if duration_sec > 3600:
+        duration_sec = float(duration_str) if duration_str else 0.0
+        if not (0 < duration_sec <= 3600):
+            results["status"] = "error"
+            results["errors"].append(f"视频时长异常 ({duration_sec}秒)，请上传有效视频")
             results["status"] = "error"
             results["errors"].append(f"视频过长 ({int(duration_sec//60)}分钟)，请上传 60 分钟以内的视频")
             return results
@@ -1510,23 +1512,33 @@ def create_demo():
 
                 def cleanup_old_files():
                     cleaned = 0
-                    if os.path.exists(OUTPUT_DIR):
-                        import time
-                        cutoff = time.time() - 7 * 24 * 3600
-                        for f in os.listdir(OUTPUT_DIR):
-                            fp = os.path.join(OUTPUT_DIR, f)
-                            if os.path.isfile(fp) and os.path.getmtime(fp) < cutoff:
-                                os.remove(fp)
-                                cleaned += 1
+                    try:
+                        if os.path.exists(OUTPUT_DIR):
+                            import time
+                            cutoff = time.time() - 7 * 24 * 3600
+                            for f in os.listdir(OUTPUT_DIR):
+                                fp = os.path.join(OUTPUT_DIR, f)
+                                try:
+                                    if os.path.isfile(fp) and os.path.getmtime(fp) < cutoff:
+                                        os.remove(fp)
+                                        cleaned += 1
+                                except Exception as fp_err:
+                                    print(f"[cleanup] 文件删除失败 ({fp}): {fp_err}")
+                                    continue
+                    except Exception as cleanup_err:
+                        print(f"[cleanup_old_files] 目录操作失败: {cleanup_err}")
                     # 返回清理结果和更新后的文件列表
                     files = []
                     total_size_mb = 0
-                    if os.path.exists(OUTPUT_DIR):
-                        for f in os.listdir(OUTPUT_DIR):
-                            fp = os.path.join(OUTPUT_DIR, f)
-                            if os.path.isfile(fp):
-                                files.append(fp)
-                                total_size_mb += os.path.getsize(fp) / (1024 * 1024)
+                    try:
+                        if os.path.exists(OUTPUT_DIR):
+                            for f in os.listdir(OUTPUT_DIR):
+                                fp = os.path.join(OUTPUT_DIR, f)
+                                if os.path.isfile(fp):
+                                    files.append(fp)
+                                    total_size_mb += os.path.getsize(fp) / (1024 * 1024)
+                    except Exception as list_err:
+                        print(f"[cleanup] 目录读取失败: {list_err}")
                     file_count = len(files)
                     size_str = f"{total_size_mb:.1f} MB，共 {file_count} 个文件"
                     return files, size_str, f"已清理 {cleaned} 个文件"
@@ -1534,12 +1546,15 @@ def create_demo():
                 def list_output_files_with_size():
                     files = []
                     total_size_mb = 0
-                    if os.path.exists(OUTPUT_DIR):
-                        for f in os.listdir(OUTPUT_DIR):
-                            fp = os.path.join(OUTPUT_DIR, f)
-                            if os.path.isfile(fp):
-                                files.append(fp)
-                                total_size_mb += os.path.getsize(fp) / (1024 * 1024)
+                    try:
+                        if os.path.exists(OUTPUT_DIR):
+                            for f in os.listdir(OUTPUT_DIR):
+                                fp = os.path.join(OUTPUT_DIR, f)
+                                if os.path.isfile(fp):
+                                    files.append(fp)
+                                    total_size_mb += os.path.getsize(fp) / (1024 * 1024)
+                    except Exception as list_err:
+                        print(f"[list_output_files] 目录读取失败: {list_err}")
                     file_count = len(files)
                     size_str = f"{total_size_mb:.1f} MB，共 {file_count} 个文件"
                     return files, size_str
