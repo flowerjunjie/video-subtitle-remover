@@ -597,7 +597,13 @@ def run_longcat_avatar(
 
     from longcat_video.modules.quantization import load_quantized_dit
     print("[LongCat-Avatar] Loading INT8 quantized DiT...")
-    dit = load_quantized_dit(checkpoint_dir, subfolder="base_model_int8", cp_split_hw=None)
+    try:
+        dit = load_quantized_dit(checkpoint_dir, subfolder="base_model_int8", cp_split_hw=None)
+    except Exception as dit_err:
+        raise RuntimeError(
+            f"LongCat-Video DiT 加载失败 (可能是 GPU compute capability 不支持 bfloat16): {dit_err}\n"
+            f"当前 GPU 可能不满足 LongCat-Avatar 最低要求（sm_75 及以上）"
+        ) from dit_err
 
     if use_distill:
         distill_path = os.path.join(checkpoint_dir, "lora", "dmd_lora.safetensors")
@@ -654,8 +660,19 @@ def run_longcat_avatar(
         print("[LongCat-Avatar] Vocal separation failed, using original audio")
         temp_vocal_path = audio_path
 
+    # 防御：若 temp_vocal_path 无效，回退到原始音频
+    if not os.path.isfile(temp_vocal_path):
+        print(f"[LongCat-Avatar] Vocal file missing ({temp_vocal_path}), using original audio")
+        temp_vocal_path = audio_path
+
     generate_duration = num_frames / save_fps + (num_segments - 1) * (num_frames - num_cond_frames) / save_fps
-    speech_array, sr = librosa.load(temp_vocal_path, sr=16000)
+    try:
+        speech_array, sr = librosa.load(temp_vocal_path, sr=16000)
+    except Exception as audio_load_err:
+        raise RuntimeError(
+            f"LongCat-Avatar 音频加载失败: {audio_load_err}\n"
+            f"音频文件: {temp_vocal_path}，大小: {os.path.getsize(temp_vocal_path) if os.path.isfile(temp_vocal_path) else 'N/A'} bytes"
+        ) from audio_load_err
     source_duration = len(speech_array) / sr
     added_samples = math.ceil((generate_duration - source_duration) * sr)
     if added_samples > 0:
@@ -856,7 +873,7 @@ def generate_tts_moss_nano(
     runtime = OnnxTtsRuntime(
         model_dir=str(resolved_model_dir),
         thread_count=4,
-        execution_provider="cpu",
+        execution_provider="CPUExecutionProvider",
     )
 
     result = runtime.synthesize(
