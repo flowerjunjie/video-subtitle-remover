@@ -235,6 +235,33 @@ def generate_srt_from_segments(segments: list, english_lines: list) -> str:
         srt_lines.append("")
     return "\n".join(srt_lines)
 
+def burn_subtitle_ffmpeg(video_path: str, srt_path: str, output_path: str = None) -> str:
+    """
+    使用 FFmpeg 将 SRT 字幕烧入视频
+    返回烧录后的视频路径，失败时返回原视频路径
+    """
+    if not srt_path or not os.path.isfile(srt_path):
+        return video_path
+    if not output_path:
+        output_path = video_path
+    try:
+        # 使用 FFmpeg subtitles 滤镜烧录 SRT
+        cmd = f'ffmpeg -y -i {shlex.quote(video_path)} -vf subtitles={shlex.quote(srt_path)} -c:a copy {shlex.quote(output_path)}'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            err = result.stderr
+            if isinstance(err, bytes):
+                err = err.decode(errors='replace')
+            print(f"[字幕烧录失败: {err}]")
+            return video_path
+        if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+            print(f"[字幕烧录后文件为空]")
+            return video_path
+        return output_path
+    except Exception as e:
+        print(f"[字幕烧录异常: {e}]")
+        return video_path
+
 def generate_tts_gtts(text: str, output_path: str) -> str:
     """生成 TTS 音频 (gTTS) - 仅作为 edge-tts 的备用方案"""
     if not text or not text.strip():
@@ -907,7 +934,7 @@ def generate_tts_moss_nano(
 
     return result["audio_path"]
 
-def process_video(video_path: str, target_face: str = None, config: dict = None, progress=gr.Progress(), model_size: str = "base", video_compose_mode: str = "ffmpeg", longcat_resolution: str = "720p", longcat_segments: int = 1, longcat_audio_guidance: float = 3.0, longcat_use_distill: bool = True) -> dict:
+def process_video(video_path: str, target_face: str = None, config: dict = None, progress=gr.Progress(), model_size: str = "base", video_compose_mode: str = "ffmpeg", longcat_resolution: str = "720p", longcat_segments: int = 1, longcat_audio_guidance: float = 3.0, longcat_use_distill: bool = True, subtitle_embed: bool = True) -> dict:
     """
     视频处理主管道
     video_compose_mode 选项：
@@ -1293,6 +1320,11 @@ def process_video(video_path: str, target_face: str = None, config: dict = None,
 
             # 只有成功合成或跳过时才追加 done 步骤
             if output_video_path:
+                # 字幕烧录：勾选嵌入且字幕文件存在时，将 SRT 烧入视频
+                if subtitle_embed and subtitle_path and os.path.isfile(subtitle_path):
+                    burned_path = burn_subtitle_ffmpeg(output_video_path, subtitle_path)
+                    if burned_path != output_video_path and os.path.isfile(burned_path):
+                        output_video_path = burned_path
                 results["steps"].append({
                     "step": "video_compose",
                     "status": "done",
@@ -1423,6 +1455,11 @@ def create_demo():
                             ],
                             value="ffmpeg",
                             info="GPU 服务器可选 wav2lip/deeplivecam/longcat；CPU 服务器用 ffmpeg"
+                        )
+                        subtitle_embed_input = gr.Checkbox(
+                            label="嵌入字幕（烧入 SRT）",
+                            value=True,
+                            info="勾选后 SRT 字幕将烧入视频，播放器无需加载外部字幕文件"
                         )
 
                         longcat_params = gr.Accordion("🎯 LongCat-Avatar 高级参数", visible=False, open=False)
@@ -1800,7 +1837,7 @@ def create_demo():
         """)
 
         # 事件绑定 - 使用 config 参数
-        def process_with_config(video_path, target_face, model_size, video_compose_mode, batch_mode=False, progress=gr.Progress(), longcat_resolution="720p", longcat_segments=1, longcat_audio_guidance=3.0, longcat_use_distill=True):
+        def process_with_config(video_path, target_face, model_size, video_compose_mode, batch_mode=False, progress=gr.Progress(), longcat_resolution="720p", longcat_segments=1, longcat_audio_guidance=3.0, longcat_use_distill=True, subtitle_embed=True):
             cfg = load_config()
 
             # 标记原始输入是否为 list（用于批量模式判断）
@@ -1846,7 +1883,7 @@ def create_demo():
                     all_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] 开始处理第 {i+1}/{len(video_path)} 个视频")
 
                     try:
-                        results = process_video(vp, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode, longcat_resolution=longcat_resolution, longcat_segments=longcat_segments, longcat_audio_guidance=longcat_audio_guidance, longcat_use_distill=longcat_use_distill)
+                        results = process_video(vp, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode, longcat_resolution=longcat_resolution, longcat_segments=longcat_segments, longcat_audio_guidance=longcat_audio_guidance, longcat_use_distill=longcat_use_distill, subtitle_embed=subtitle_embed)
                     except Exception as e:
                         results = {"status": "error", "errors": [str(e)], "output_video": None, "steps": [], "processing_time": 0}
 
@@ -1877,7 +1914,7 @@ def create_demo():
 
             # 单文件模式
             try:
-                results = process_video(video_path, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode, longcat_resolution=longcat_resolution, longcat_segments=longcat_segments, longcat_audio_guidance=longcat_audio_guidance, longcat_use_distill=longcat_use_distill)
+                results = process_video(video_path, target_face, cfg, progress=progress, model_size=model_size, video_compose_mode=video_compose_mode, longcat_resolution=longcat_resolution, longcat_segments=longcat_segments, longcat_audio_guidance=longcat_audio_guidance, longcat_use_distill=longcat_use_distill, subtitle_embed=subtitle_embed)
             finally:
                 # 清理 process_with_config 阶段创建的临时视频文件
                 if _temp_video_path and os.path.exists(_temp_video_path):
@@ -2021,7 +2058,7 @@ def create_demo():
 
         # 清空上传
         def clear_upload():
-            return None, None, "", "", "", 0, False, "", "ffmpeg"
+            return None, None, "", "", "", 0, False, "", "ffmpeg", True
 
         clear_btn.click(
             fn=clear_upload,
@@ -2047,7 +2084,7 @@ def create_demo():
             outputs=[process_btn, cancel_btn]
         ).then(
             fn=process_with_config,
-            inputs=[video_input, target_face_input, model_size_input, video_compose_input, batch_toggle, longcat_resolution, longcat_segments, longcat_audio_guidance, longcat_use_distill],
+            inputs=[video_input, target_face_input, model_size_input, video_compose_input, batch_toggle, longcat_resolution, longcat_segments, longcat_audio_guidance, longcat_use_distill, subtitle_embed_input],
             outputs=[status_output, result_video, subtitle_download, error_output, log_output, overall_progress, source_name_output]
         ).then(
             fn=enable_processing,
