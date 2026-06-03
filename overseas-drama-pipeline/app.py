@@ -1969,7 +1969,7 @@ def create_demo():
 
         # 清空上传
         def clear_upload():
-            return None, None, "", "", "", 0, False, "", "ffmpeg", "ffmpeg"
+            return None, None, "", "", "", 0, False, "", "ffmpeg"
 
         clear_btn.click(
             fn=clear_upload,
