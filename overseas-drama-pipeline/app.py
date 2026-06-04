@@ -2062,7 +2062,7 @@ def create_demo():
 
         clear_btn.click(
             fn=clear_upload,
-            outputs=[video_input, target_face_input, estimate_output, metadata_output, log_output, overall_progress, batch_toggle, video_compose_input, source_name_output]
+            outputs=[video_input, target_face_input, estimate_output, metadata_output, log_output, overall_progress, batch_toggle, video_compose_input, source_name_output, subtitle_embed_input]
         )
 
         # 按钮防重复：处理中禁用
